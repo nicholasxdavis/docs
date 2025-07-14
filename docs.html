@@ -311,8 +311,8 @@
                         <p class="text-dark-tertiary text-sm">Transform rough ideas into polished content with our advanced AI.</p>
                     </div>
                     <div class="bg-dark-secondary p-6 rounded-xl card-hover">
-                        <div class="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center mb-4">
-                            <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        <div class="w-12 h-12 bg-[#06b2fc]/20 rounded-lg flex items-center justify-center mb-4">
+                             <svg class="w-6 h-6 text-[#06b2fc]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
                         </div>
                         <h3 class="text-lg font-semibold mb-2">Secure Cloud Sync</h3>
                         <p class="text-dark-tertiary text-sm">All documents are securely saved to your Google Drive automatically.</p>
@@ -390,13 +390,36 @@
     </div>
     
     <!-- Loading Skeleton -->
-    <div id="loading-skeleton" class="fixed inset-0 bg-dark-primary/90 z-[2000] flex items-center justify-center hidden">
-        <div class="text-center">
-            <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-dark-secondary skeleton"></div>
-            <div class="h-4 w-48 bg-dark-secondary rounded skeleton mb-2 mx-auto"></div>
-            <div class="h-3 w-64 bg-dark-secondary rounded skeleton mx-auto"></div>
-        </div>
-    </div>
+<div id="loading-skeleton" class="fixed inset-0 bg-dark-primary/90 z-[2000] flex items-center justify-center hidden">
+    <div class="loader"></div>
+</div>
+<style> 
+/* Loader animation */
+.loader {
+  width: 50px;
+  aspect-ratio: 1;
+  box-shadow: 0 0 0 3px #06b2fc inset;
+  border-radius: 50%;
+  position: relative;
+  animation: l6 1.5s linear infinite;
+}
+.loader:before {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: inherit;
+  width: 25px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+}
+@keyframes l6 {
+  to {
+    transform: rotate(360deg);
+  }
+}
+</style>
 
     
     
@@ -440,38 +463,46 @@
         }
 
         async initializeAuth() {
-            this.setupAuthEventListeners();
-            this.showLoading(true);
-            const { data: { session } } = await supabase.auth.getSession();
-            this.session = session;
-            this.user = session?.user || null;
-            
-            if (this.user) {
-                await this.loadUsage();
-                // Check if we have a stored Google token
-                if (this.googleToken) {
-                    try {
-                        gapi.client.setToken(JSON.parse(this.googleToken));
-                        updateGoogleAuthUI(true);
-                    } catch (e) {
-                        console.error("Error restoring Google token:", e);
-                        localStorage.removeItem('googleToken');
-                    }
+    this.setupAuthEventListeners();
+    this.showLoading(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    this.session = session;
+    this.user = session?.user || null;
+    
+    if (this.user) {
+        await this.loadUsage();
+        // Check if we have a stored Google token
+        const storedToken = localStorage.getItem('googleToken');
+        if (storedToken) {
+            try {
+                const token = JSON.parse(storedToken);
+                // Check if token is still valid
+                if (token.expires_in && (Date.now() < (token.issued_at * 1000 + token.expires_in * 1000))) {
+                    gapi.client.setToken(token);
+                    updateGoogleAuthUI(true);
+                } else {
+                    // Token expired, remove it
+                    localStorage.removeItem('googleToken');
                 }
+            } catch (e) {
+                console.error("Error restoring Google token:", e);
+                localStorage.removeItem('googleToken');
             }
-            
-            this.updateUI();
-            this.showLoading(false);
-
-            supabase.auth.onAuthStateChange(async (event, session) => {
-                this.session = session;
-                this.user = session?.user || null;
-                if (this.user) {
-                    await this.loadUsage();
-                }
-                this.updateUI();
-            });
         }
+    }
+    
+    this.updateUI();
+    this.showLoading(false);
+
+    supabase.auth.onAuthStateChange(async (event, session) => {
+        this.session = session;
+        this.user = session?.user || null;
+        if (this.user) {
+            await this.loadUsage();
+        }
+        this.updateUI();
+    });
+}
 
         showLoading(show) {
             const loader = document.getElementById('loading-skeleton');
@@ -540,19 +571,19 @@
             }
         }
 
-        async handleSignOut() {
-            this.showLoading(true);
-            await supabase.auth.signOut();
-            const token = gapi.client.getToken();
-            if (token !== null) {
-                google.accounts.oauth2.revoke(token.access_token, () => {
-                    gapi.client.setToken(null);
-                    updateGoogleAuthUI(false);
-                });
-                localStorage.removeItem('googleToken');
-            }
-            this.showLoading(false);
-        }
+       async handleSignOut() {
+    this.showLoading(true);
+    await supabase.auth.signOut();
+    const token = gapi.client.getToken();
+    if (token !== null) {
+        google.accounts.oauth2.revoke(token.access_token, () => {
+            gapi.client.setToken(null);
+            updateGoogleAuthUI(false);
+        });
+        localStorage.removeItem('googleToken');
+    }
+    this.showLoading(false);
+}
 
         async handleUpgrade() {
             if (!this.user) return alert('Please sign in to upgrade.');
@@ -883,24 +914,46 @@
         }
 
         function gisLoaded() {
-            gisInited = true;
-            tokenClient = google.accounts.oauth2.initTokenClient({
-                client_id: deobfuscate(GOOGLE_CLIENT_ID_OBFUSCATED),
-                scope: SCOPES,
-                callback: (tokenResponse) => {
-                    if (tokenResponse && tokenResponse.access_token) {
-                        gapi.client.setToken(tokenResponse);
-                        // Store the token in localStorage
-                        localStorage.setItem('googleToken', JSON.stringify(tokenResponse));
-                        updateGoogleAuthUI(true);
-                    } else {
-                        console.error("Invalid token response:", tokenResponse);
-                    }
-                },
-            });
-            authManager.initializeAuth();
-        }
+    gisInited = true;
+    tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: deobfuscate(GOOGLE_CLIENT_ID_OBFUSCATED),
+        scope: SCOPES,
+        callback: (tokenResponse) => {
+            if (tokenResponse && tokenResponse.access_token) {
+                gapi.client.setToken(tokenResponse);
+                // Store the token with additional metadata
+                const tokenToStore = {
+                    ...tokenResponse,
+                    issued_at: Math.floor(Date.now() / 1000) // Current timestamp in seconds
+                };
+                localStorage.setItem('googleToken', JSON.stringify(tokenToStore));
+                updateGoogleAuthUI(true);
+            } else {
+                console.error("Invalid token response:", tokenResponse);
+            }
+        },
+    });
+    authManager.initializeAuth();
+}
 
+
+function checkTokenExpiry() {
+    const storedToken = localStorage.getItem('googleToken');
+    if (storedToken) {
+        try {
+            const token = JSON.parse(storedToken);
+            // Refresh token if it will expire in the next 5 minutes
+            if (token.expires_in && (Date.now() > (token.issued_at * 1000 + (token.expires_in - 300) * 1000))) {
+                tokenClient.requestAccessToken({ prompt: '' });
+            }
+        } catch (e) {
+            console.error("Error checking token expiry:", e);
+        }
+    }
+}
+
+// Check token expiry every minute
+setInterval(checkTokenExpiry, 60000);
         window.onload = gapiLoaded;
 
         const authorizeButton = document.getElementById('authorize_button');
@@ -923,10 +976,22 @@
             }
         };
 
-        function updateGoogleAuthUI(isAuthorized) {
-            document.getElementById('google-link-section').classList.toggle('hidden', isAuthorized);
-            document.getElementById('doc-generator').classList.toggle('hidden', !isAuthorized);
+       function updateGoogleAuthUI(isAuthorized) {
+    const googleLinkSection = document.getElementById('google-link-section');
+    const docGenerator = document.getElementById('doc-generator');
+    
+    if (isAuthorized) {
+        const token = gapi.client.getToken();
+        if (token && token.expires_in) {
+            const expiresIn = Math.floor((token.issued_at * 1000 + token.expires_in * 1000 - Date.now()) / 1000 / 60);
+            document.getElementById('google-auth-status').textContent = 
+                `Google Account connected (expires in ${Math.max(0, expiresIn)} minutes)`;
         }
+    }
+    
+    googleLinkSection.classList.toggle('hidden', isAuthorized);
+    docGenerator.classList.toggle('hidden', !isAuthorized);
+}
 
         const generateDocBtn = document.getElementById('generate-doc-btn');
         const aiEnhanceBtn = document.getElementById('ai-enhance-btn');
