@@ -44,40 +44,48 @@
         <!-- Main Content Area -->
         <div id="app-content" class="max-w-3xl mx-auto hidden">
             <div class="bg-white p-8 rounded-xl shadow-lg">
-                 <h2 class="text-3xl font-bold mb-2 text-gray-900">Create a New Document</h2>
-                 <p id="google-auth-status" class="mb-6 text-gray-500">Your Google Account is linked. You can now generate documents.</p>
-                 
-                 <div class="space-y-6">
-                    <div>
-                        <label for="doc-title" class="block text-sm font-medium text-gray-700 mb-1">Document Title</label>
-                        <input type="text" id="doc-title" placeholder="e.g., Q3 Marketing Strategy" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <div>
-                        <label for="doc-content" class="block text-sm font-medium text-gray-700 mb-1">Content</label>
-                        <textarea id="doc-content" rows="12" placeholder="Enter your content here, or write a prompt and use the AI to generate it." class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
-                    </div>
+                 <div id="google-link-section" class="mb-6 text-center">
+                    <h2 class="text-2xl font-semibold mb-2 text-gray-800">Link Your Google Account</h2>
+                    <p id="google-auth-status" class="mb-4 text-gray-600">To create documents, you need to grant permission to your Google Account.</p>
+                    <button id="authorize_button" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition-all">Link Google Account</button>
+                    <button id="signout_button" class="hidden bg-red-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-red-700 transition-all">Unlink Google Account</button>
                  </div>
 
-                 <div class="flex flex-col sm:flex-row gap-4 mt-6">
-                    <button id="ai-enhance-btn" class="w-full bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
-                        <span>Enhance with AI</span>
-                    </button>
-                    <button id="generate-doc-btn" class="w-full bg-green-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 transition-all flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V8z" clip-rule="evenodd"></path></svg>
-                        <span>Create Google Doc</span>
-                    </button>
-                 </div>
-                 <p id="generator-status" class="mt-4 text-center h-5"></p>
+                 <div id="doc-generator" class="hidden">
+                    <h2 class="text-3xl font-bold mb-2 text-gray-900">Create a New Document</h2>
+                    <p class="mb-6 text-gray-500">Your Google Account is linked. You can now generate documents.</p>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label for="doc-title" class="block text-sm font-medium text-gray-700 mb-1">Document Title</label>
+                            <input type="text" id="doc-title" placeholder="e.g., Q3 Marketing Strategy" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label for="doc-content" class="block text-sm font-medium text-gray-700 mb-1">Content</label>
+                            <textarea id="doc-content" rows="12" placeholder="Enter your content here, or write a prompt and use the AI to generate it." class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-4 mt-6">
+                        <button id="ai-enhance-btn" class="w-full bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                            <span>Enhance with AI</span>
+                        </button>
+                        <button id="generate-doc-btn" class="w-full bg-green-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 transition-all flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V8z" clip-rule="evenodd"></path></svg>
+                            <span>Create Google Doc</span>
+                        </button>
+                    </div>
+                    <p id="generator-status" class="mt-4 text-center h-5"></p>
+                </div>
             </div>
         </div>
 
         <div id="auth-prompt" class="text-center p-10 bg-white rounded-xl shadow-lg max-w-md mx-auto">
             <h2 class="text-2xl font-bold text-gray-800">Welcome!</h2>
-            <p class="mt-2 mb-6 text-gray-600">Please sign in with your Google account to create and manage documents.</p>
-            <button id="masterSignInBtn" class="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 flex items-center justify-center gap-2">
-                <svg class="w-6 h-6" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571l6.19,5.238C42.021,35.596,44,30.138,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
-                Sign in with Google
+            <p class="mt-2 mb-6 text-gray-600">Please sign in or create an account to get started.</p>
+            <button id="masterSignInBtn" class="w-full bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700">
+                Sign In or Sign Up
             </button>
         </div>
     </div>
@@ -86,7 +94,29 @@
     <div id="overlay" class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 hidden z-[1000]"></div>
     <div id="accountPopup" class="popup-content hidden fixed top-1/2 left-1/2 w-full max-w-sm z-[1001]">
          <button id="closeAccountPopupBtn" class="absolute top-3 right-4 text-2xl font-bold text-gray-500 hover:text-gray-800">&times;</button>
-        <div id="accountActions">
+        
+        <!-- Logged Out View -->
+        <div id="loggedOutView">
+             <div id="signInForm">
+                <h3 class="text-2xl font-bold mb-4">Sign In</h3>
+                <input type="email" id="signInEmail" placeholder="Email" class="w-full p-2 mb-3 border rounded">
+                <input type="password" id="signInPassword" placeholder="Password" class="w-full p-2 mb-4 border rounded">
+                <button id="signInBtn" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Sign In</button>
+                <p id="signInError" class="text-red-500 mt-2 text-sm hidden"></p>
+                <p class="mt-4 text-sm">Don't have an account? <a href="#" id="showSignUpBtn" class="text-indigo-600 font-semibold">Sign Up</a></p>
+            </div>
+            <div id="signUpForm" class="hidden">
+                <h3 class="text-2xl font-bold mb-4">Create Account</h3>
+                <input type="email" id="signUpEmail" placeholder="Email" class="w-full p-2 mb-3 border rounded">
+                <input type="password" id="signUpPassword" placeholder="Password (min. 6 chars)" class="w-full p-2 mb-4 border rounded">
+                <button id="signUpBtn" class="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600">Sign Up</button>
+                <p id="signUpError" class="text-red-500 mt-2 text-sm hidden"></p>
+                <p class="mt-4 text-sm">Already have an account? <a href="#" id="showSignInBtn" class="text-indigo-600 font-semibold">Sign In</a></p>
+            </div>
+        </div>
+
+        <!-- Logged In View -->
+        <div id="accountActions" class="hidden">
             <h3 class="text-xl font-bold mb-1">My Account</h3>
             <p class="mb-4 text-sm text-gray-500" id="accountUserEmail"></p>
             <div class="bg-gray-50 p-4 rounded-lg text-left mb-4">
@@ -109,6 +139,7 @@
 
         // --- GOOGLE API CONFIG ---
         const GOOGLE_API_KEY_OBFUSCATED = 'A*I*z*a*S*y*A*U*I*v*4*H*E*M*u*f*F*0*x*5*1*e*Z*q*L*p*e*o*R*t*J*X*8*W*n*r*n*i*o';
+        const GOOGLE_CLIENT_ID_OBFUSCATED = '4*6*7*1*2*2*3*4*7*1*9*5*-*5*g*g*9*e*i*8*a*h*f*l*e*0*t*t*s*e*6*j*s*l*t*2*k*k*h*i*m*l*k*k*1*.*a*p*p*s*.*g*o*o*g*l*e*u*s*e*r*c*o*n*t*e*n*t*.*c*o*m';
         const DISCOVERY_DOC = 'https://docs.googleapis.com/$discovery/rest?version=v1';
         const SCOPES = 'https://www.googleapis.com/auth/documents';
 
@@ -116,6 +147,8 @@
         const OPENROUTER_API_KEY_OBFUSCATED = 's*k*-*o*r*-*v*1*-*6*5*5*7*9*2*e*e*e*8*c*c*4*7*c*2*9*7*c*0*e*4*c*7*b*d*f*9*4*0*c*a*5*5*3*8*5*9*a*f*b*8*e*d*9*9*5*5*4*c*c*9*b*3*d*8*9*1*b*5*d*1*d*b';
         const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
         const DEFAULT_MODEL = 'openrouter/cypher-alpha:free';
+
+        let tokenClient;
 
         // --- AUTH MANAGER ---
         class AuthManager {
@@ -131,12 +164,8 @@
                 supabase.auth.onAuthStateChange(async (event, session) => {
                     this.session = session;
                     this.user = session?.user || null;
-                    
-                    if (this.user && session?.provider_token) {
-                        gapi.client.setToken({ access_token: session.provider_token });
+                    if (this.user) {
                         await this.loadUsage();
-                    } else {
-                        gapi.client.setToken(null);
                     }
                     this.updateUI();
                 });
@@ -144,32 +173,60 @@
 
             setupAuthEventListeners() {
                 document.getElementById('accountBtn').addEventListener('click', () => this.toggleAccountPopup());
-                document.getElementById('masterSignInBtn').addEventListener('click', () => this.handleSignInWithGoogle());
+                document.getElementById('masterSignInBtn').addEventListener('click', () => this.toggleAccountPopup(true));
                 document.getElementById('signOutBtn').addEventListener('click', () => this.handleSignOut());
                 document.getElementById('closeAccountPopupBtn').addEventListener('click', () => this.closeAccountPopup());
                 document.getElementById('overlay').addEventListener('click', () => this.closeAccountPopup());
                 document.getElementById('upgradeToProBtn').addEventListener('click', () => this.handleUpgrade());
+                // Email/Password Auth
+                document.getElementById('signInBtn').addEventListener('click', () => this.handleSignIn());
+                document.getElementById('signUpBtn').addEventListener('click', () => this.handleSignUp());
+                document.getElementById('showSignUpBtn').addEventListener('click', (e) => { e.preventDefault(); this.showSignUpForm(); });
+                document.getElementById('showSignInBtn').addEventListener('click', (e) => { e.preventDefault(); this.showSignInForm(); });
             }
-
-            async handleSignInWithGoogle() {
-                const { error } = await supabase.auth.signInWithOAuth({
-                    provider: 'google',
-                    options: { scopes: SCOPES, redirectTo: window.location.href },
-                });
+            
+            async handleSignIn() {
+                const email = document.getElementById('signInEmail').value;
+                const password = document.getElementById('signInPassword').value;
+                const { error } = await supabase.auth.signInWithPassword({ email, password });
                 if (error) {
-                    console.error('Error signing in with Google:', error);
-                    alert('Could not sign in with Google. Please check the console for details.');
+                    document.getElementById('signInError').textContent = error.message;
+                    document.getElementById('signInError').classList.remove('hidden');
+                } else {
+                    this.closeAccountPopup();
                 }
             }
             
-            async handleSignOut() { await supabase.auth.signOut(); }
+            async handleSignUp() {
+                const email = document.getElementById('signUpEmail').value;
+                const password = document.getElementById('signUpPassword').value;
+                const { error } = await supabase.auth.signUp({ email, password });
+                if (error) {
+                    document.getElementById('signUpError').textContent = error.message;
+                    document.getElementById('signUpError').classList.remove('hidden');
+                } else {
+                    alert('Check your email for a confirmation link!');
+                    this.closeAccountPopup();
+                }
+            }
+
+            async handleSignOut() {
+                await supabase.auth.signOut();
+                // Also sign out from Google if linked
+                const token = gapi.client.getToken();
+                if (token !== null) {
+                    google.accounts.oauth2.revoke(token.access_token, () => {
+                        gapi.client.setToken(null);
+                        updateGoogleAuthUI(false);
+                    });
+                }
+            }
 
             async handleUpgrade() {
                 if (!this.user) return alert('Please sign in to upgrade.');
                 const statusEl = document.getElementById('generator-status');
                 statusEl.textContent = 'Redirecting to checkout...';
                 statusEl.style.color = 'blue';
-
                 try {
                     const { data, error } = await supabase.functions.invoke('create-checkout-session', {
                         body: { userId: this.user.id, email: this.user.email }
@@ -203,13 +260,14 @@
             }
 
             updateUI() {
-                const isLoggedInWithGoogle = !!(this.user && this.session?.provider_token);
-                document.getElementById('app-content').classList.toggle('hidden', !isLoggedInWithGoogle);
-                document.getElementById('auth-prompt').classList.toggle('hidden', isLoggedInWithGoogle);
+                const isLoggedIn = !!this.user;
+                document.getElementById('app-content').classList.toggle('hidden', !isLoggedIn);
+                document.getElementById('auth-prompt').classList.toggle('hidden', isLoggedIn);
                 this.updateAccountPopupUI();
             }
 
             updateAccountPopupUI() {
+                const loggedOutView = document.getElementById('loggedOutView');
                 const accountActions = document.getElementById('accountActions');
                 const proBadge = document.getElementById('proBadge');
                 const upgradeBtn = document.getElementById('upgradeToProBtn');
@@ -221,39 +279,72 @@
                     proBadge.classList.toggle('hidden', !this.hasActiveSubscription);
                     upgradeBtn.classList.toggle('hidden', this.hasActiveSubscription);
                     upgradePrompt.classList.toggle('hidden', this.hasActiveSubscription);
+                    loggedOutView.classList.add('hidden');
                     accountActions.classList.remove('hidden');
                 } else {
+                    loggedOutView.classList.remove('hidden');
                     accountActions.classList.add('hidden');
+                    this.showSignInForm();
                 }
             }
             
-            toggleAccountPopup() {
+            toggleAccountPopup(forceOpen = false) {
                 const popup = document.getElementById('accountPopup');
                 const overlay = document.getElementById('overlay');
-                popup.classList.toggle('hidden');
-                overlay.classList.toggle('hidden');
-                if (!popup.classList.contains('hidden')) this.updateAccountPopupUI();
+                if (forceOpen || popup.classList.contains('hidden')) {
+                    popup.classList.remove('hidden');
+                    overlay.classList.remove('hidden');
+                    this.updateAccountPopupUI();
+                } else {
+                    this.closeAccountPopup();
+                }
             }
 
             closeAccountPopup() {
                 document.getElementById('accountPopup').classList.add('hidden');
                 document.getElementById('overlay').classList.add('hidden');
             }
+
+            showSignUpForm() {
+                document.getElementById('signInForm').classList.add('hidden');
+                document.getElementById('signUpForm').classList.remove('hidden');
+                document.getElementById('signInError').classList.add('hidden');
+            }
+
+            showSignInForm() {
+                document.getElementById('signUpForm').classList.add('hidden');
+                document.getElementById('signInForm').classList.remove('hidden');
+                document.getElementById('signUpError').classList.add('hidden');
+            }
         }
 
         // --- MAIN APP LOGIC ---
         document.addEventListener('DOMContentLoaded', () => {
             const authManager = new AuthManager();
+            let gapiInited = false;
+            let gisInited = false;
 
+            // This function is the main entry point for all Google-related initializations.
             function gapiLoaded() {
-                gapi.load('client', () => initializeGapiClient(authManager));
+                gapi.load('client', initializeGapiClient);
             }
-            async function initializeGapiClient(authManager) {
+
+            async function initializeGapiClient() {
                 try {
-                    await gapi.client.init({ apiKey: deobfuscate(GOOGLE_API_KEY_OBFUSCATED), discoveryDocs: [DISCOVERY_DOC] });
-                    authManager.initializeAuth();
+                    await gapi.client.init({
+                        apiKey: deobfuscate(GOOGLE_API_KEY_OBFUSCATED),
+                        discoveryDocs: [DISCOVERY_DOC],
+                    });
+                    gapiInited = true;
+                    // Now that GAPI is ready, dynamically load the GIS script.
+                    const gisScript = document.createElement('script');
+                    gisScript.src = 'https://accounts.google.com/gsi/client';
+                    gisScript.async = true;
+                    gisScript.defer = true;
+                    gisScript.onload = gisLoaded; // Set the callback for when GIS loads
+                    document.body.appendChild(gisScript);
                 } catch (error) {
-                    console.error("Error initializing GAPI client:", error);
+                     console.error("Error initializing GAPI client:", error);
                     const apiErrorBanner = document.getElementById('api-error-banner');
                     if (error?.result?.error?.status === 'PERMISSION_DENIED') {
                         const activationUrl = error.result.error.details?.[0]?.metadata?.activationUrl;
@@ -267,7 +358,53 @@
                     apiErrorBanner.classList.remove('hidden');
                 }
             }
-            gapiLoaded();
+
+            function gisLoaded() {
+                gisInited = true;
+                tokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: deobfuscate(GOOGLE_CLIENT_ID_OBFUSCATED),
+                    scope: SCOPES,
+                    callback: (tokenResponse) => {
+                        if (tokenResponse && tokenResponse.access_token) {
+                            gapi.client.setToken(tokenResponse);
+                            updateGoogleAuthUI(true);
+                        } else {
+                            console.error("Invalid token response:", tokenResponse);
+                        }
+                    },
+                });
+                // Now that both Google libraries are ready, initialize the main app auth.
+                authManager.initializeAuth();
+            }
+
+            // The GAPI script in the <head> doesn't have an onload, so we can't reliably use it.
+            // Instead, we'll wait for the window to load, which is a good signal that external scripts are ready.
+            window.onload = gapiLoaded;
+
+
+            const authorizeButton = document.getElementById('authorize_button');
+            const signoutButton = document.getElementById('signout_button');
+            
+            authorizeButton.onclick = () => {
+                if (tokenClient) {
+                    tokenClient.requestAccessToken({ prompt: 'consent' });
+                }
+            };
+            
+            signoutButton.onclick = () => {
+                const token = gapi.client.getToken();
+                if (token !== null) {
+                    google.accounts.oauth2.revoke(token.access_token, () => {
+                        gapi.client.setToken(null);
+                        updateGoogleAuthUI(false);
+                    });
+                }
+            };
+
+            function updateGoogleAuthUI(isAuthorized) {
+                document.getElementById('google-link-section').classList.toggle('hidden', isAuthorized);
+                document.getElementById('doc-generator').classList.toggle('hidden', !isAuthorized);
+            }
 
             const generateDocBtn = document.getElementById('generate-doc-btn');
             const aiEnhanceBtn = document.getElementById('ai-enhance-btn');
@@ -284,14 +421,22 @@
                 statusEl.textContent = 'Creating document...';
                 statusEl.style.color = 'blue';
                 try {
-                    const doc = await gapi.client.docs.documents.create({ title: title });
+                    const response = await gapi.client.docs.documents.create({
+                        title: title,
+                    });
+                    const docId = response.result.documentId;
                     await gapi.client.docs.documents.batchUpdate({
-                        documentId: doc.result.documentId,
-                        requests: [{ insertText: { location: { index: 1 }, text: content } }]
+                        documentId: docId,
+                        requests: [{
+                            insertText: {
+                                text: content,
+                                location: { index: 1 },
+                            },
+                        }],
                     });
                     statusEl.textContent = `Document created successfully!`;
                     statusEl.style.color = 'green';
-                    const docLink = `https://docs.google.com/document/d/${doc.result.documentId}/edit`;
+                    const docLink = `https://docs.google.com/document/d/${docId}/edit`;
                     statusEl.innerHTML += ` <a href="${docLink}" target="_blank" class="text-blue-600 hover:underline">Open Document</a>`;
                 } catch (err) {
                     statusEl.textContent = `Error: ${err?.result?.error?.message || err.message}`;
@@ -320,7 +465,7 @@
                     return result.choices?.[0]?.message?.content;
                 } catch (error) {
                     console.error("OpenRouter API Error:", error);
-                    throw error; // Re-throw to be caught by the final catch block
+                    throw error;
                 }
             }
 
@@ -342,7 +487,6 @@
                     return enhancedText;
                 } catch (geminiError) {
                     console.warn("Gemini API failed, trying OpenRouter fallback.", geminiError);
-                    // If Gemini fails, try OpenRouter
                     return await callOpenRouterApi(prompt);
                 }
             };
