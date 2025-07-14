@@ -180,16 +180,16 @@
         }
         
         ::-webkit-scrollbar-track {
-            background: #242628;
+            background: #161618;
         }
         
         ::-webkit-scrollbar-thumb {
-            background: #06b2fc;
-            border-radius: 4px;
+            background: #333;
+            border-radius: 6px;
         }
         
         ::-webkit-scrollbar-thumb:hover {
-            background: #50b1f7;
+            background: #444;
         }
         
         /* Textarea styling */
@@ -214,6 +214,78 @@
         .toggle-checkbox:checked + .toggle-label {
             background-color: #06b2fc;
         }
+        /* Loader animation */
+.loader {
+  width: 50px;
+  aspect-ratio: 1;
+  box-shadow: 0 0 0 3px #06b2fc inset;
+  border-radius: 50%;
+  position: relative;
+  animation: l6 1.5s linear infinite;
+}
+.loader:before {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: inherit;
+  width: 25px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+}
+@keyframes l6 {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Google Icons Container */
+.google-icons-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.google-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    opacity: 0.5;
+    filter: grayscale(100%);
+}
+
+.google-icon:hover {
+    transform: translateY(-5px);
+}
+
+.google-icon.connected {
+    opacity: 1;
+    filter: grayscale(0);
+    background: rgba(36, 38, 40, 0.5);
+}
+
+.google-icon.connected:hover {
+    background: rgba(36, 38, 40, 0.8);
+}
+
+.google-icon svg {
+    width: 3rem;
+    height: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+.google-icon span {
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-align: center;
+}
     </style>
 </head>
 <body class="font-sans antialiased bg-dark-primary text-dark-light min-h-screen">
@@ -240,16 +312,69 @@
         <div id="app-content" class="max-w-4xl mx-auto hidden animate-fade-up" style="animation-delay: 0.1s">
             <div class="glassmorphism p-8 rounded-2xl shadow-xl">
                 <div id="google-link-section" class="mb-8 text-center">
-                    <h2 class="text-3xl font-bold mb-4 text-transparent bg-clip-text bg-[#06b2fc]">Connect Your Workspace</h2>
-                    <p id="google-auth-status" class="mb-6 text-dark-tertiary">Link your Google Account to start creating AI-powered documents</p>
-                    <button id="authorize_button" class="bg-[#06b2fc] text-white font-semibold py-3 px-8 rounded-lg hover:bg-[#0595d8] transition-all transform btn-micro flex items-center justify-center gap-2 mx-auto">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12.545 10.239v3.821h5.445c-0.712 2.315-2.647 3.972-5.445 3.972-3.332 0-6.033-2.701-6.033-6.032s2.701-6.032 6.033-6.032c1.498 0 2.866 0.549 3.921 1.453l2.814-2.814c-1.786-1.664-4.145-2.675-6.735-2.675-5.522 0-10 4.477-10 10s4.478 10 10 10c8.396 0 10-7.496 10-10 0-0.671-0.068-1.325-0.189-1.961h-9.811z"></path></svg>
-                        <span>Connect Google Account</span>
-                    </button>
-                    <button id="signout_button" class="hidden bg-dark-secondary text-dark-light font-semibold py-3 px-8 rounded-lg hover:bg-dark-tertiary transition-all transform btn-micro flex items-center justify-center gap-2 mx-auto mt-4">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                        <span>Disconnect Account</span>
-                    </button>
+                    <h2 class="text-3xl font-bold mb-4 text-transparent bg-clip-text bg-[#06b2fc]">Google Workspace</h2>
+                    <p id="google-auth-status" class="mb-6 text-dark-tertiary">Connect your Google Account to access these tools</p>
+                    
+                    <div class="google-icons-container">
+                        <!-- Google Docs -->
+                        <div id="docs-icon" class="google-icon" data-tool="docs">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+                                <path fill="#4285F4" d="M24 25.2v16.8c4.7 0 8.5-3.8 8.5-8.5s-3.8-8.3-8.5-8.3z"/>
+                                <path fill="#34A853" d="M24 16.8v8.4c4.7 0 8.5-3.8 8.5-8.5s-3.8-8.5-8.5-8.5z"/>
+                                <path fill="#EA4335" d="M24 8.4v8.4c4.7 0 8.5-3.8 8.5-8.5s-3.8-8.5-8.5-8.5z"/>
+                                <path fill="#FBBC05" d="M15.5 8.4h8.5v8.5c-4.7 0-8.5-3.8-8.5-8.5z"/>
+                                <path fill="#4285F4" d="M15.5 16.8h8.5v8.5c-4.7 0-8.5-3.8-8.5-8.5z"/>
+                                <path fill="#34A853" d="M15.5 25.2h8.5v8.5c-4.7 0-8.5-3.8-8.5-8.5z"/>
+                            </svg>
+                            <span>Docs</span>
+                        </div>
+                        
+                        <!-- Google Sheets -->
+                        <div id="sheets-icon" class="google-icon" data-tool="sheets">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+                                <path fill="#0F9D58" d="M24 8.4L8.4 24v16.8h31.2V8.4H24z"/>
+                                <path fill="#87CEAC" d="M24 8.4v15.6h15.6V8.4H24z"/>
+                                <path fill="#E6E6E6" d="M15.5 30.8h17v5.2h-17z"/>
+                                <path fill="#E6E6E6" d="M15.5 24h17v5.2h-17z"/>
+                                <path fill="#E6E6E6" d="M15.5 17.2h17v5.2h-17z"/>
+                            </svg>
+                            <span>Sheets</span>
+                        </div>
+                        
+                        <!-- Google Slides -->
+                        <div id="slides-icon" class="google-icon" data-tool="slides">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+                                <path fill="#FFC107" d="M24 8.4L8.4 24v16.8h31.2V8.4H24z"/>
+                                <path fill="#FFD54F" d="M24 8.4v15.6h15.6V8.4H24z"/>
+                                <path fill="#E6E6E6" d="M15.5 30.8h17v5.2h-17z"/>
+                                <path fill="#E6E6E6" d="M15.5 24h17v5.2h-17z"/>
+                            </svg>
+                            <span>Slides</span>
+                        </div>
+                        
+                        <!-- Google Forms -->
+                        <div id="forms-icon" class="google-icon" data-tool="forms">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+                                <path fill="#673AB7" d="M24 8.4L8.4 24v16.8h31.2V8.4H24z"/>
+                                <path fill="#9575CD" d="M24 8.4v15.6h15.6V8.4H24z"/>
+                                <path fill="#E6E6E6" d="M15.5 30.8h17v5.2h-17z"/>
+                                <path fill="#E6E6E6" d="M15.5 24h17v5.2h-17z"/>
+                                <path fill="#E6E6E6" d="M15.5 17.2h17v5.2h-17z"/>
+                            </svg>
+                            <span>Forms</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 flex justify-center gap-4">
+                        <button id="authorize_button" class="bg-[#06b2fc] text-white font-semibold py-3 px-8 rounded-lg hover:bg-[#0595d8] transition-all transform btn-micro flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12.545 10.239v3.821h5.445c-0.712 2.315-2.647 3.972-5.445 3.972-3.332 0-6.033-2.701-6.033-6.032s2.701-6.032 6.033-6.032c1.498 0 2.866 0.549 3.921 1.453l2.814-2.814c-1.786-1.664-4.145-2.675-6.735-2.675-5.522 0-10 4.477-10 10s4.478 10 10 10c8.396 0 10-7.496 10-10 0-0.671-0.068-1.325-0.189-1.961h-9.811z"></path></svg>
+                            <span>Connect Google Account</span>
+                        </button>
+                        <button id="signout_button" class="hidden bg-dark-secondary text-dark-light font-semibold py-3 px-8 rounded-lg hover:bg-dark-tertiary transition-all transform btn-micro flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                            <span>Disconnect</span>
+                        </button>
+                    </div>
                 </div>
 
                 <div id="doc-generator" class="hidden">
@@ -393,33 +518,7 @@
 <div id="loading-skeleton" class="fixed inset-0 bg-dark-primary/90 z-[2000] flex items-center justify-center hidden">
     <div class="loader"></div>
 </div>
-<style> 
-/* Loader animation */
-.loader {
-  width: 50px;
-  aspect-ratio: 1;
-  box-shadow: 0 0 0 3px #06b2fc inset;
-  border-radius: 50%;
-  position: relative;
-  animation: l6 1.5s linear infinite;
-}
-.loader:before {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  box-shadow: inherit;
-  width: 25px;
-  aspect-ratio: 1;
-  border-radius: 50%;
-}
-@keyframes l6 {
-  to {
-    transform: rotate(360deg);
-  }
-}
-</style>
+
 
     
     
@@ -463,46 +562,46 @@
         }
 
         async initializeAuth() {
-    this.setupAuthEventListeners();
-    this.showLoading(true);
-    const { data: { session } } = await supabase.auth.getSession();
-    this.session = session;
-    this.user = session?.user || null;
-    
-    if (this.user) {
-        await this.loadUsage();
-        // Check if we have a stored Google token
-        const storedToken = localStorage.getItem('googleToken');
-        if (storedToken) {
-            try {
-                const token = JSON.parse(storedToken);
-                // Check if token is still valid
-                if (token.expires_in && (Date.now() < (token.issued_at * 1000 + token.expires_in * 1000))) {
-                    gapi.client.setToken(token);
-                    updateGoogleAuthUI(true);
-                } else {
-                    // Token expired, remove it
-                    localStorage.removeItem('googleToken');
+            this.setupAuthEventListeners();
+            this.showLoading(true);
+            const { data: { session } } = await supabase.auth.getSession();
+            this.session = session;
+            this.user = session?.user || null;
+            
+            if (this.user) {
+                await this.loadUsage();
+                // Check if we have a stored Google token
+                const storedToken = localStorage.getItem('googleToken');
+                if (storedToken) {
+                    try {
+                        const token = JSON.parse(storedToken);
+                        // Check if token is still valid
+                        if (token.expires_in && (Date.now() < (token.issued_at * 1000 + token.expires_in * 1000))) {
+                            gapi.client.setToken(token);
+                            updateGoogleAuthUI(true);
+                        } else {
+                            // Token expired, remove it
+                            localStorage.removeItem('googleToken');
+                        }
+                    } catch (e) {
+                        console.error("Error restoring Google token:", e);
+                        localStorage.removeItem('googleToken');
+                    }
                 }
-            } catch (e) {
-                console.error("Error restoring Google token:", e);
-                localStorage.removeItem('googleToken');
             }
-        }
-    }
-    
-    this.updateUI();
-    this.showLoading(false);
+            
+            this.updateUI();
+            this.showLoading(false);
 
-    supabase.auth.onAuthStateChange(async (event, session) => {
-        this.session = session;
-        this.user = session?.user || null;
-        if (this.user) {
-            await this.loadUsage();
+            supabase.auth.onAuthStateChange(async (event, session) => {
+                this.session = session;
+                this.user = session?.user || null;
+                if (this.user) {
+                    await this.loadUsage();
+                }
+                this.updateUI();
+            });
         }
-        this.updateUI();
-    });
-}
 
         showLoading(show) {
             const loader = document.getElementById('loading-skeleton');
@@ -571,19 +670,19 @@
             }
         }
 
-       async handleSignOut() {
-    this.showLoading(true);
-    await supabase.auth.signOut();
-    const token = gapi.client.getToken();
-    if (token !== null) {
-        google.accounts.oauth2.revoke(token.access_token, () => {
-            gapi.client.setToken(null);
-            updateGoogleAuthUI(false);
-        });
-        localStorage.removeItem('googleToken');
-    }
-    this.showLoading(false);
-}
+        async handleSignOut() {
+            this.showLoading(true);
+            await supabase.auth.signOut();
+            const token = gapi.client.getToken();
+            if (token !== null) {
+                google.accounts.oauth2.revoke(token.access_token, () => {
+                    gapi.client.setToken(null);
+                    updateGoogleAuthUI(false);
+                });
+                localStorage.removeItem('googleToken');
+            }
+            this.showLoading(false);
+        }
 
         async handleUpgrade() {
             if (!this.user) return alert('Please sign in to upgrade.');
@@ -914,46 +1013,45 @@
         }
 
         function gisLoaded() {
-    gisInited = true;
-    tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: deobfuscate(GOOGLE_CLIENT_ID_OBFUSCATED),
-        scope: SCOPES,
-        callback: (tokenResponse) => {
-            if (tokenResponse && tokenResponse.access_token) {
-                gapi.client.setToken(tokenResponse);
-                // Store the token with additional metadata
-                const tokenToStore = {
-                    ...tokenResponse,
-                    issued_at: Math.floor(Date.now() / 1000) // Current timestamp in seconds
-                };
-                localStorage.setItem('googleToken', JSON.stringify(tokenToStore));
-                updateGoogleAuthUI(true);
-            } else {
-                console.error("Invalid token response:", tokenResponse);
-            }
-        },
-    });
-    authManager.initializeAuth();
-}
-
-
-function checkTokenExpiry() {
-    const storedToken = localStorage.getItem('googleToken');
-    if (storedToken) {
-        try {
-            const token = JSON.parse(storedToken);
-            // Refresh token if it will expire in the next 5 minutes
-            if (token.expires_in && (Date.now() > (token.issued_at * 1000 + (token.expires_in - 300) * 1000))) {
-                tokenClient.requestAccessToken({ prompt: '' });
-            }
-        } catch (e) {
-            console.error("Error checking token expiry:", e);
+            gisInited = true;
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: deobfuscate(GOOGLE_CLIENT_ID_OBFUSCATED),
+                scope: SCOPES,
+                callback: (tokenResponse) => {
+                    if (tokenResponse && tokenResponse.access_token) {
+                        gapi.client.setToken(tokenResponse);
+                        // Store the token with additional metadata
+                        const tokenToStore = {
+                            ...tokenResponse,
+                            issued_at: Math.floor(Date.now() / 1000) // Current timestamp in seconds
+                        };
+                        localStorage.setItem('googleToken', JSON.stringify(tokenToStore));
+                        updateGoogleAuthUI(true);
+                    } else {
+                        console.error("Invalid token response:", tokenResponse);
+                    }
+                },
+            });
+            authManager.initializeAuth();
         }
-    }
-}
 
-// Check token expiry every minute
-setInterval(checkTokenExpiry, 60000);
+        function checkTokenExpiry() {
+            const storedToken = localStorage.getItem('googleToken');
+            if (storedToken) {
+                try {
+                    const token = JSON.parse(storedToken);
+                    // Refresh token if it will expire in the next 5 minutes
+                    if (token.expires_in && (Date.now() > (token.issued_at * 1000 + (token.expires_in - 300) * 1000))) {
+                        tokenClient.requestAccessToken({ prompt: '' });
+                    }
+                } catch (e) {
+                    console.error("Error checking token expiry:", e);
+                }
+            }
+        }
+
+        // Check token expiry every minute
+        setInterval(checkTokenExpiry, 60000);
         window.onload = gapiLoaded;
 
         const authorizeButton = document.getElementById('authorize_button');
@@ -976,22 +1074,61 @@ setInterval(checkTokenExpiry, 60000);
             }
         };
 
-       function updateGoogleAuthUI(isAuthorized) {
-    const googleLinkSection = document.getElementById('google-link-section');
-    const docGenerator = document.getElementById('doc-generator');
-    
-    if (isAuthorized) {
-        const token = gapi.client.getToken();
-        if (token && token.expires_in) {
-            const expiresIn = Math.floor((token.issued_at * 1000 + token.expires_in * 1000 - Date.now()) / 1000 / 60);
-            document.getElementById('google-auth-status').textContent = 
-                `Google Account connected (expires in ${Math.max(0, expiresIn)} minutes)`;
+        function updateGoogleAuthUI(isAuthorized) {
+            const googleLinkSection = document.getElementById('google-link-section');
+            const docGenerator = document.getElementById('doc-generator');
+            
+            if (isAuthorized) {
+                const token = gapi.client.getToken();
+                if (token && token.expires_in) {
+                    const expiresIn = Math.floor((token.issued_at * 1000 + token.expires_in * 1000 - Date.now()) / 1000 / 60);
+                    document.getElementById('google-auth-status').textContent = 
+                        `Google Account connected (expires in ${Math.max(0, expiresIn)} minutes)`;
+                }
+                
+                // Enable all Google icons
+                document.querySelectorAll('.google-icon').forEach(icon => {
+                    icon.classList.add('connected');
+                });
+            } else {
+                // Disable all Google icons
+                document.querySelectorAll('.google-icon').forEach(icon => {
+                    icon.classList.remove('connected');
+                });
+            }
+            
+            googleLinkSection.classList.toggle('hidden', isAuthorized);
+            docGenerator.classList.toggle('hidden', !isAuthorized);
         }
-    }
-    
-    googleLinkSection.classList.toggle('hidden', isAuthorized);
-    docGenerator.classList.toggle('hidden', !isAuthorized);
-}
+
+        // Handle Google icon clicks
+        document.querySelectorAll('.google-icon').forEach(icon => {
+            icon.addEventListener('click', function() {
+                if (!this.classList.contains('connected')) return;
+                
+                const tool = this.getAttribute('data-tool');
+                let url = '';
+                
+                switch(tool) {
+                    case 'docs':
+                        url = 'https://docs.google.com/document/create';
+                        break;
+                    case 'sheets':
+                        url = 'https://docs.google.com/spreadsheets/create';
+                        break;
+                    case 'slides':
+                        url = 'https://docs.google.com/presentation/create';
+                        break;
+                    case 'forms':
+                        url = 'https://docs.google.com/forms/create';
+                        break;
+                    default:
+                        return;
+                }
+                
+                window.open(url, '_blank');
+            });
+        });
 
         const generateDocBtn = document.getElementById('generate-doc-btn');
         const aiEnhanceBtn = document.getElementById('ai-enhance-btn');
