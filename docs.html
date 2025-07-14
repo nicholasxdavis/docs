@@ -1,1055 +1,152 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Blacnova AI - Generate professional documents with AI assistance. Create, enhance, and manage Google Docs effortlessly.">
-    <meta name="keywords" content="AI document generator, Google Docs, content creation, writing assistant, productivity tool">
-    <meta name="author" content="Blacnova">
-    <meta property="og:title" content="Blacnova AI - Smart Document Generator">
-    <meta property="og:description" content="Create professional documents with AI assistance in seconds.">
-    <meta property="og:type" content="website">
-    <title>Blacnova AI | Smart Document Generator</title>
-    
-    <!-- Favicon -->
-    <link rel="icon" href="img/logo.png" type="image/png">
-    
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Tailwind CSS with Dark Mode -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        dark: {
-                            primary: '#161618',
-                            secondary: '#242628',
-                            tertiary: '#a1a1a2',
-                            light: '#fcfcfc'
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif']
-                    },
-                    animation: {
-                        'fade-up': 'fade-up 0.5s ease-out',
-                        'fade-in': 'fade-in 0.3s ease-out',
-                        'text-reveal': 'text-reveal 1.5s ease-out forwards',
-                        'float': 'float 6s ease-in-out infinite',
-                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-                    },
-                    keyframes: {
-                        'fade-up': {
-                            '0%': { opacity: '0', transform: 'translateY(20px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' }
-                        },
-                        'fade-in': {
-                            '0%': { opacity: '0' },
-                            '100%': { opacity: '1' }
-                        },
-                        'text-reveal': {
-                            '0%': { 'background-size': '0% 100%' },
-                            '100%': { 'background-size': '100% 100%' }
-                        },
-                        'float': {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-10px)' }
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    
-    <!-- GSAP -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    
-    <!-- Three.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    
-    <!-- Typed.js -->
-    <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
-    
-    <!-- Required APIs -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://apis.google.com/js/api.js"></script>
-    <script src="https://js.stripe.com/v3/"></script>
-    
-    <style>
-        body {
-            background-color: #161618;
-            color: #fcfcfc;
-        }
-        
-        .glassmorphism {
-            background: rgba(22, 22, 24, 0.7);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(36, 38, 40, 0.5);
-        }
-        
-        .text-gradient {
-            background: linear-gradient(90deg, #6366f1, #8b5cf6);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            background-size: 200% 100%;
-            animation: text-reveal 2s ease-out forwards;
-        }
-        
-        .highlight-text {
-            position: relative;
-            z-index: 1;
-        }
-        
-        .highlight-text::after {
-            content: '';
-            position: absolute;
-            bottom: 2px;
-            left: 0;
-            width: 100%;
-            height: 30%;
-            background: linear-gradient(90deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.3));
-            z-index: -1;
-            border-radius: 2px;
-        }
-        
-        .skeleton {
-            background: linear-gradient(90deg, #242628 25%, #2e3032 50%, #242628 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite linear;
-        }
-        
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-        
-        .parallax {
-            transition: transform 0.1s ease-out;
-        }
-        
-        .scroll-indicator {
-            animation: bounce 2s infinite;
-        }
-        
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-10px); }
-            60% { transform: translateY(-5px); }
-        }
-        
-        .btn-micro:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.3);
-        }
-        
-        .btn-micro:active {
-            transform: translateY(0);
-        }
-        
-        .card-hover {
-            transition: all 0.3s ease;
-        }
-        
-        .card-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-        }
-        
-        .hidden { display: none; }
-        
-        .popup-content {
-            transform: translate(-50%, -50%);
-            animation: fadeIn 0.3s ease-out;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translate(-50%, -45%); }
-            to { opacity: 1; transform: translate(-50%, -50%); }
-        }
-        
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #242628;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #6366f1;
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: #8b5cf6;
-        }
-        
-        /* Textarea styling */
-        .custom-textarea {
-            background: #242628;
-            border: 1px solid #3a3c3e;
-            transition: all 0.3s ease;
-        }
-        
-        .custom-textarea:focus {
-            border-color: #6366f1;
-            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-        }
-        
-        /* Toggle switch */
-        .toggle-checkbox:checked {
-            right: 0;
-            border-color: #6366f1;
-            background-color: #6366f1;
-        }
-        
-        .toggle-checkbox:checked + .toggle-label {
-            background-color: #6366f1;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Orbit Loader Final</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: #161618;
+      color: #fcfcfc;
+      font-family: 'Inter', sans-serif;
+    }
+    .glassmorphism {
+      background: rgba(22, 22, 24, 0.7);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(36, 38, 40, 0.5);
+      border-radius: 1rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    }
+  </style>
 </head>
-<body class="font-sans antialiased bg-dark-primary text-dark-light min-h-screen">
-    <!-- 3D Background Canvas -->
-    <div id="canvas-container" class="fixed inset-0 -z-10 opacity-20"></div>
-    
-    <!-- API Error Banner -->
-    <div id="api-error-banner" class="hidden bg-red-600 text-white p-4 text-center fixed top-0 left-0 w-full z-[2000] glassmorphism"></div>
+<body class="min-h-screen flex items-center justify-center p-6">
 
-    <!-- Main Container -->
-    <div class="container mx-auto px-4 md:px-8 py-6">
-        <!-- Header -->
-        <header class="flex justify-between items-center mb-12 animate-fade-up">
-            <div class="flex items-center gap-3">
-                <img src="img/logo.png" alt="Blacnova Logo" class="w-8 h-8">
-                <h1 class="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">Blacnova AI</h1>
-            </div>
-            <button id="accountBtn" class="bg-dark-secondary text-dark-light font-medium py-2 px-4 rounded-lg hover:bg-dark-tertiary transition-all flex items-center gap-2 btn-micro">
-                <span id="accountBtnText">Account</span>
-                <span id="proBadge" class="hidden bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs font-bold px-2 py-1 rounded-full">PRO</span>
-            </button>
-        </header>
+  <div class="glassmorphism w-[260px] h-[260px] flex items-center justify-center p-6">
+    <canvas id="planet-loader" class="rounded-lg" style="width: 100%; height: 100%; display: block;"></canvas>
+  </div>
 
-        <!-- Main Content Area -->
-        <div id="app-content" class="max-w-4xl mx-auto hidden animate-fade-up" style="animation-delay: 0.1s">
-            <div class="glassmorphism p-8 rounded-2xl shadow-xl">
-                <div id="google-link-section" class="mb-8 text-center">
-                    <h2 class="text-3xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Connect Your Workspace</h2>
-                    <p id="google-auth-status" class="mb-6 text-dark-tertiary">Link your Google Account to start creating AI-powered documents</p>
-                    <button id="authorize_button" class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold py-3 px-8 rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all transform btn-micro flex items-center justify-center gap-2 mx-auto">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12.545 10.239v3.821h5.445c-0.712 2.315-2.647 3.972-5.445 3.972-3.332 0-6.033-2.701-6.033-6.032s2.701-6.032 6.033-6.032c1.498 0 2.866 0.549 3.921 1.453l2.814-2.814c-1.786-1.664-4.145-2.675-6.735-2.675-5.522 0-10 4.477-10 10s4.478 10 10 10c8.396 0 10-7.496 10-10 0-0.671-0.068-1.325-0.189-1.961h-9.811z"></path></svg>
-                        <span>Connect Google Account</span>
-                    </button>
-                    <button id="signout_button" class="hidden bg-dark-secondary text-dark-light font-semibold py-3 px-8 rounded-lg hover:bg-dark-tertiary transition-all transform btn-micro flex items-center justify-center gap-2 mx-auto mt-4">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                        <span>Disconnect Account</span>
-                    </button>
-                </div>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script>
+    const scene = new THREE.Scene();
 
-                <div id="doc-generator" class="hidden">
-                    <div class="mb-8">
-                        <h2 class="text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Create New Document</h2>
-                        <p class="text-dark-tertiary">Your Google Account is connected. Start creating with AI.</p>
-                    </div>
-                    
-                    <div class="space-y-6">
-                        <div>
-                            <label for="doc-title" class="block text-sm font-medium text-dark-tertiary mb-2">Document Title</label>
-                            <input type="text" id="doc-title" placeholder="e.g., Q3 Marketing Strategy" class="w-full p-3 bg-dark-secondary border border-dark-tertiary rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-dark-light placeholder-dark-tertiary">
-                        </div>
-                        <div>
-                            <div class="flex justify-between items-center mb-2">
-                                <label for="doc-content" class="block text-sm font-medium text-dark-tertiary">Content</label>
-                                <div class="flex items-center space-x-2">
-                                    <span class="text-xs text-dark-tertiary">AI Formatting</span>
-                                    <div class="relative inline-block w-10 mr-2 align-middle select-none">
-                                        <input type="checkbox" id="ai-format-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
-                                        <label for="ai-format-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
-                                    </div>
-                                </div>
-                            </div>
-                            <textarea id="doc-content" rows="12" placeholder="Enter your content here, or write a prompt and use the AI to generate it..." class="w-full p-4 custom-textarea rounded-lg focus:outline-none text-dark-light placeholder-dark-tertiary resize-none"></textarea>
-                        </div>
-                    </div>
+    const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+    camera.position.z = 5;
 
-                    <div class="flex flex-col sm:flex-row gap-4 mt-8">
-                        <button id="ai-enhance-btn" class="flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all transform btn-micro flex items-center justify-center gap-2">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path></svg>
-                            <span>Enhance with AI</span>
-                        </button>
-                        <button id="generate-doc-btn" class="flex-1 bg-gradient-to-r from-green-500 to-teal-500 text-white font-semibold py-3 px-6 rounded-lg hover:from-green-600 hover:to-teal-600 transition-all transform btn-micro flex items-center justify-center gap-2">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V8z" clip-rule="evenodd"></path></svg>
-                            <span>Create Google Doc</span>
-                        </button>
-                    </div>
-                    <p id="generator-status" class="mt-4 text-center h-5 text-sm"></p>
-                </div>
-            </div>
-            
-            <!-- Features Section -->
-            <div class="mt-16 glassmorphism p-8 rounded-2xl shadow-xl">
-                <h2 class="text-2xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Powerful Features</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-dark-secondary p-6 rounded-xl card-hover">
-                        <div class="w-12 h-12 bg-indigo-500/20 rounded-lg flex items-center justify-center mb-4">
-                            <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-                        </div>
-                        <h3 class="text-lg font-semibold mb-2">Instant Document Creation</h3>
-                        <p class="text-dark-tertiary text-sm">Generate professional Google Docs in seconds with our streamlined interface.</p>
-                    </div>
-                    <div class="bg-dark-secondary p-6 rounded-xl card-hover">
-                        <div class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center mb-4">
-                            <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                        </div>
-                        <h3 class="text-lg font-semibold mb-2">AI Content Enhancement</h3>
-                        <p class="text-dark-tertiary text-sm">Transform rough ideas into polished content with our advanced AI.</p>
-                    </div>
-                    <div class="bg-dark-secondary p-6 rounded-xl card-hover">
-                        <div class="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center mb-4">
-                            <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                        </div>
-                        <h3 class="text-lg font-semibold mb-2">Secure Cloud Sync</h3>
-                        <p class="text-dark-tertiary text-sm">All documents are securely saved to your Google Drive automatically.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true
+    });
 
-        <!-- Auth Prompt -->
-        <div id="auth-prompt" class="text-center p-10 glassmorphism rounded-2xl shadow-xl max-w-md mx-auto animate-fade-up">
-            <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center">
-                <img src="img/logo.png" alt="Blacnova Logo" class="w-12 h-12">
-            </div>
-            <h2 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 mb-2">Welcome to Blacnova</h2>
-            <p class="text-dark-tertiary mb-8">Sign in to start creating AI-powered documents</p>
-            <button id="masterSignInBtn" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-3 rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all transform btn-micro">
-                Sign In or Sign Up
-            </button>
-        </div>
-    </div>
+    const canvasContainer = document.getElementById('planet-loader').parentElement;
+    const width = canvasContainer.clientWidth;
+    const height = canvasContainer.clientHeight;
 
-    <!-- Account Popup -->
-    <div id="overlay" class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-70 hidden z-[1000] backdrop-blur-sm"></div>
-    <div id="accountPopup" class="popup-content hidden fixed top-1/2 left-1/2 w-full max-w-sm z-[1001] animate-fade-in">
-        <div class="bg-dark-secondary rounded-xl shadow-2xl p-6 relative transform -translate-x-1/2 -translate-y-1/2 border border-dark-tertiary/30">
-            <button id="closeAccountPopupBtn" class="absolute top-4 right-4 text-dark-tertiary hover:text-dark-light transition">&times;</button>
-            
-            <!-- Logged Out View -->
-            <div id="loggedOutView">
-                <div id="signInForm">
-                    <h3 class="text-2xl font-bold mb-6 text-dark-light">Sign In</h3>
-                    <input type="email" id="signInEmail" placeholder="Email" class="w-full p-3 mb-4 bg-dark-primary border border-dark-tertiary rounded-lg text-dark-light placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <input type="password" id="signInPassword" placeholder="Password" class="w-full p-3 mb-4 bg-dark-primary border border-dark-tertiary rounded-lg text-dark-light placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <button id="signInBtn" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-3 rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all mb-4">Sign In</button>
-                    <p id="signInError" class="text-red-400 mt-2 text-sm hidden"></p>
-                    <p class="mt-4 text-sm text-dark-tertiary">Don't have an account? <a href="#" id="showSignUpBtn" class="text-indigo-400 font-medium hover:underline">Sign Up</a></p>
-                </div>
-                <div id="signUpForm" class="hidden">
-                    <h3 class="text-2xl font-bold mb-6 text-dark-light">Create Account</h3>
-                    <input type="email" id="signUpEmail" placeholder="Email" class="w-full p-3 mb-4 bg-dark-primary border border-dark-tertiary rounded-lg text-dark-light placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <input type="password" id="signUpPassword" placeholder="Password (min. 6 chars)" class="w-full p-3 mb-4 bg-dark-primary border border-dark-tertiary rounded-lg text-dark-light placeholder-dark-tertiary focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <button id="signUpBtn" class="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white p-3 rounded-lg hover:from-green-600 hover:to-teal-600 transition-all mb-4">Sign Up</button>
-                    <p id="signUpError" class="text-red-400 mt-2 text-sm hidden"></p>
-                    <p class="mt-4 text-sm text-dark-tertiary">Already have an account? <a href="#" id="showSignInBtn" class="text-indigo-400 font-medium hover:underline">Sign In</a></p>
-                </div>
-            </div>
+    renderer.setSize(width, height);
+    const oldCanvas = document.getElementById('planet-loader');
+    oldCanvas.replaceWith(renderer.domElement);
 
-            <!-- Logged In View -->
-            <div id="accountActions" class="hidden">
-                <div class="flex items-center gap-3 mb-6">
-                    <div class="w-12 h-12 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold">
-                        <span id="accountInitials"></span>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-dark-light">My Account</h3>
-                        <p class="text-sm text-dark-tertiary" id="accountUserEmail"></p>
-                    </div>
-                </div>
-                
-                <div class="bg-dark-primary p-4 rounded-lg mb-6 border border-dark-tertiary/20">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-sm font-medium text-dark-tertiary">Current Plan</span>
-                        <span id="accountUserPlan" class="text-sm font-bold bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent"></span>
-                    </div>
-                    <div class="h-2 bg-dark-secondary rounded-full mb-2 overflow-hidden">
-                        <div id="usageBar" class="h-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full" style="width: 0%"></div>
-                    </div>
-                    <p id="upgrade-prompt" class="text-xs text-dark-tertiary">Upgrade to Pro for unlimited documents and AI features.</p>
-                </div>
-                
-                <button id="upgradeToProBtn" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-3 rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all mb-3">Upgrade to Pro</button>
-                <button id="signOutBtn" class="w-full bg-dark-primary text-dark-light p-3 rounded-lg hover:bg-dark-tertiary/20 transition-all border border-dark-tertiary/30">Sign Out</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Loading Skeleton -->
-    <div id="loading-skeleton" class="fixed inset-0 bg-dark-primary/90 z-[2000] flex items-center justify-center hidden">
-        <div class="text-center">
-            <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-dark-secondary skeleton"></div>
-            <div class="h-4 w-48 bg-dark-secondary rounded skeleton mb-2 mx-auto"></div>
-            <div class="h-3 w-64 bg-dark-secondary rounded skeleton mx-auto"></div>
-        </div>
-    </div>
-    
-    <script>
-        // --- KEY DEOBFUSCATION ---
-        const deobfuscate = (key) => key.replace(/\*/g, '');
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
 
-        // --- CONFIGURATION ---
-        const SUPABASE_URL = 'https://zxeikhguvghtsqouyuyz.supabase.co';
-        const SUPABASE_ANON_KEY_OBFUSCATED = 'e*y*J*h*b*G*c*i*O*i*J*I*U*z*I*1*N*i*I*s*I*n*R*5*c*C*I*6*I*k*p*X*V*C*J*9*.*e*y*J*p*c*3*M*i*O*i*J*z*d*X*B*h*Y*m*F*z*Z*S*I*s*I*n*J*l*Z*i*I*6*I*n*p*4*Z*W*l*r*a*G*d*1*d*m*d*o*d*H*N*x*b*3*V*5*d*X*l*6*I*i*w*i*c*m*9*s*Z*S*I*6*I*m*F*u*b*2*4*i*L*C*J*p*Y*X*Q*i*O*j*E*3*N*T*E*1*O*D*Y*y*M*z*A*s*I*m*V*4*c*C*I*6*M*j*A*2*N*z*E*2*M*j*I*z*M*H*0*.*a*9*j*W*r*_*h*1*d*g*y*i*_*S*T*7*s*g*K*D*A*S*D*H*i*7*h*k*M*j*S*W*O*R*7*8*V*q*2*f*M*N*0';
-        const supabase = window.supabase.createClient(SUPABASE_URL, deobfuscate(SUPABASE_ANON_KEY_OBFUSCATED));
-        
-        const STRIPE_PUBLISHABLE_KEY_OBFUSCATED = 'p*k*_*t*e*s*t*_*5*1*R*8*v*i*v*G*r*s*d*J*U*1*d*j*q*O*m*J*c*5*5*2*p*6*s*q*z*K*V*m*1*Q*p*r*L*I*R*a*l*h*n*a*J*m*i*e*7*3*H*c*6*A*o*j*0*j*V*G*G*J*m*I*x*B*K*1*z*6*H*p*H*I*B*Q*Y*m*e*V*A*B*B*E*p*Q*S*8*8*0*0*w*g*y*G*p*O*4*y';
-        const stripe = Stripe(deobfuscate(STRIPE_PUBLISHABLE_KEY_OBFUSCATED));
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(5, 5, 5);
+    scene.add(directionalLight);
 
-        // --- GOOGLE API CONFIG ---
-        const GOOGLE_API_KEY_OBFUSCATED = 'A*I*z*a*S*y*A*U*I*v*4*H*E*M*u*f*F*0*x*5*1*e*Z*q*L*p*e*o*R*t*J*X*8*W*n*r*n*i*o';
-        const GOOGLE_CLIENT_ID_OBFUSCATED = '4*6*7*1*2*2*3*4*7*1*9*5*-*5*g*g*9*e*i*8*a*h*f*l*e*0*t*t*s*e*6*j*s*l*t*2*k*k*h*i*m*l*k*k*1*.*a*p*p*s*.*g*o*o*g*l*e*u*s*e*r*c*o*n*t*e*n*t*.*c*o*m';
-        const DISCOVERY_DOC = 'https://docs.googleapis.com/$discovery/rest?version=v1';
-        const SCOPES = 'https://www.googleapis.com/auth/documents';
-
-        // --- OPENROUTER CONFIG ---
-        const OPENROUTER_API_KEY_OBFUSCATED = 's*k*-*o*r*-*v*1*-*6*5*5*7*9*2*e*e*e*8*c*c*4*7*c*2*9*7*c*0*e*4*c*7*b*d*f*9*4*0*c*a*5*5*3*8*5*9*a*f*b*8*e*d*9*9*5*5*4*c*c*9*b*3*d*8*9*1*b*5*d*1*d*b';
-        const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-        const DEFAULT_MODEL = 'openrouter/cypher-alpha:free';
-
-        let tokenClient;
-        let threeJSInitialized = false;
-
-        // --- AUTH MANAGER ---
-        class AuthManager {
-            constructor() {
-                this.user = null;
-                this.session = null;
-                this.hasActiveSubscription = false;
-                this.userPlan = 'free';
-                this.paymentLoading = false;
-                this.documentCount = 0;
-                this.maxDocuments = 5;
-            }
-
-            async initializeAuth() {
-                this.setupAuthEventListeners();
-                this.showLoading(true);
-                const { data: { session } } = await supabase.auth.getSession();
-                this.session = session;
-                this.user = session?.user || null;
-                if (this.user) {
-                    await this.loadUsage();
-                }
-                this.updateUI();
-                this.showLoading(false);
-
-                supabase.auth.onAuthStateChange(async (event, session) => {
-                    this.session = session;
-                    this.user = session?.user || null;
-                    if (this.user) {
-                        await this.loadUsage();
-                    }
-                    this.updateUI();
-                });
-            }
-
-            showLoading(show) {
-                const loader = document.getElementById('loading-skeleton');
-                loader.classList.toggle('hidden', !show);
-            }
-
-            setupAuthEventListeners() {
-                document.getElementById('accountBtn').addEventListener('click', () => this.toggleAccountPopup());
-                document.getElementById('masterSignInBtn').addEventListener('click', () => this.toggleAccountPopup(true));
-                document.getElementById('signOutBtn').addEventListener('click', () => this.handleSignOut());
-                document.getElementById('closeAccountPopupBtn').addEventListener('click', () => this.closeAccountPopup());
-                document.getElementById('overlay').addEventListener('click', () => this.closeAccountPopup());
-                document.getElementById('upgradeToProBtn').addEventListener('click', () => this.handleUpgrade());
-                // Email/Password Auth
-                document.getElementById('signInBtn').addEventListener('click', () => this.handleSignIn());
-                document.getElementById('signUpBtn').addEventListener('click', () => this.handleSignUp());
-                document.getElementById('showSignUpBtn').addEventListener('click', (e) => { e.preventDefault(); this.showSignUpForm(); });
-                document.getElementById('showSignInBtn').addEventListener('click', (e) => { e.preventDefault(); this.showSignInForm(); });
-            }
-            
-            async handleSignIn() {
-                const email = document.getElementById('signInEmail').value;
-                const password = document.getElementById('signInPassword').value;
-                if (!email || !password) {
-                    document.getElementById('signInError').textContent = 'Please fill in all fields';
-                    document.getElementById('signInError').classList.remove('hidden');
-                    return;
-                }
-                
-                this.showLoading(true);
-                const { error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) {
-                    document.getElementById('signInError').textContent = error.message;
-                    document.getElementById('signInError').classList.remove('hidden');
-                    this.showLoading(false);
-                } else {
-                    this.closeAccountPopup();
-                    this.showLoading(false);
-                }
-            }
-            
-            async handleSignUp() {
-                const email = document.getElementById('signUpEmail').value;
-                const password = document.getElementById('signUpPassword').value;
-                if (!email || !password) {
-                    document.getElementById('signUpError').textContent = 'Please fill in all fields';
-                    document.getElementById('signUpError').classList.remove('hidden');
-                    return;
-                }
-                if (password.length < 6) {
-                    document.getElementById('signUpError').textContent = 'Password must be at least 6 characters';
-                    document.getElementById('signUpError').classList.remove('hidden');
-                    return;
-                }
-                
-                this.showLoading(true);
-                const { error } = await supabase.auth.signUp({ email, password });
-                if (error) {
-                    document.getElementById('signUpError').textContent = error.message;
-                    document.getElementById('signUpError').classList.remove('hidden');
-                    this.showLoading(false);
-                } else {
-                    alert('Check your email for a confirmation link!');
-                    this.closeAccountPopup();
-                    this.showLoading(false);
-                }
-            }
-
-            async handleSignOut() {
-                this.showLoading(true);
-                await supabase.auth.signOut();
-                const token = gapi.client.getToken();
-                if (token !== null) {
-                    google.accounts.oauth2.revoke(token.access_token, () => {
-                        gapi.client.setToken(null);
-                        updateGoogleAuthUI(false);
-                    });
-                }
-                this.showLoading(false);
-            }
-
-            async handleUpgrade() {
-                if (!this.user) return alert('Please sign in to upgrade.');
-                if (this.paymentLoading) return;
-                this.paymentLoading = true;
-                this.showLoading(true);
-
-                const statusEl = document.getElementById('generator-status');
-                statusEl.textContent = 'Preparing secure checkout...';
-                statusEl.style.color = '#6366f1';
-
-                try {
-                    const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-                        body: { userId: this.user.id, email: this.user.email }
-                    });
-
-                    if (error) throw error;
-                    if (!data) throw new Error('No response from payment server');
-
-                    if (data.url) {
-                        window.location.href = data.url;
-                    } else if (data.sessionId) {
-                        const result = await stripe.redirectToCheckout({ sessionId: data.sessionId });
-                        if (result.error) throw result.error;
-                    } else {
-                        throw new Error('No valid payment method received');
-                    }
-                } catch (error) {
-                    console.error('Payment Error:', error);
-                    statusEl.textContent = `Payment failed: ${error.message.split('.')[0]}`;
-                    statusEl.style.color = '#ef4444';
-                } finally {
-                    this.paymentLoading = false;
-                    this.showLoading(false);
-                }
-            }
-
-            async loadUsage() {
-                this.hasActiveSubscription = false;
-                this.userPlan = 'free';
-                this.documentCount = 0;
-                this.maxDocuments = 5;
-                
-                if (!this.user) return;
-
-                try {
-                    // Get subscription status
-                    const { data: subscriptions, error: subError } = await supabase
-                        .from('user_subscriptions')
-                        .select('status')
-                        .eq('user_id', this.user.id)
-                        .in('status', ['active', 'pending']);
-
-                    if (subError) throw subError;
-
-                    const hasValidSubscription = subscriptions && subscriptions.length > 0;
-                    this.hasActiveSubscription = hasValidSubscription;
-                    this.userPlan = hasValidSubscription ? 'pro' : 'free';
-                    
-                    // Get document count (mock - replace with actual implementation)
-                    this.documentCount = Math.floor(Math.random() * 6); // Random for demo
-                    if (this.hasActiveSubscription) {
-                        this.maxDocuments = Infinity;
-                    }
-                    
-                    // Update usage bar
-                    const usagePercentage = this.hasActiveSubscription ? 0 : (this.documentCount / this.maxDocuments) * 100;
-                    document.getElementById('usageBar').style.width = `${usagePercentage}%`;
-                    
-                } catch (error) {
-                    console.error('Usage check failed:', error);
-                    this.hasActiveSubscription = false;
-                    this.userPlan = 'free';
-                } finally {
-                    this.updateAccountPopupUI();
-                }
-            }
-
-            updateUI() {
-                const isLoggedIn = !!this.user;
-                document.getElementById('app-content').classList.toggle('hidden', !isLoggedIn);
-                document.getElementById('auth-prompt').classList.toggle('hidden', isLoggedIn);
-                this.updateAccountPopupUI();
-                
-                // Initialize animations when content is shown
-                if (isLoggedIn && !threeJSInitialized) {
-                    initThreeJSBackground();
-                    initAnimations();
-                    threeJSInitialized = true;
-                }
-            }
-
-            updateAccountPopupUI() {
-                const loggedOutView = document.getElementById('loggedOutView');
-                const accountActions = document.getElementById('accountActions');
-                const proBadge = document.getElementById('proBadge');
-                const upgradeBtn = document.getElementById('upgradeToProBtn');
-                const upgradePrompt = document.getElementById('upgrade-prompt');
-
-                if (this.user) {
-                    document.getElementById('accountUserEmail').textContent = this.user.email;
-                    document.getElementById('accountUserPlan').textContent = this.userPlan === 'pro' ? 'Pro' : 'Free';
-                    proBadge.classList.toggle('hidden', !this.hasActiveSubscription);
-                    upgradeBtn.classList.toggle('hidden', this.hasActiveSubscription);
-                    upgradePrompt.classList.toggle('hidden', this.hasActiveSubscription);
-                    
-                    // Set initials
-                    const initials = this.user.email.slice(0, 2).toUpperCase();
-                    document.getElementById('accountInitials').textContent = initials;
-                    
-                    loggedOutView.classList.add('hidden');
-                    accountActions.classList.remove('hidden');
-                } else {
-                    loggedOutView.classList.remove('hidden');
-                    accountActions.classList.add('hidden');
-                    this.showSignInForm();
-                }
-            }
-            
-            toggleAccountPopup(forceOpen = false) {
-                const popup = document.getElementById('accountPopup');
-                const overlay = document.getElementById('overlay');
-                if (forceOpen || popup.classList.contains('hidden')) {
-                    popup.classList.remove('hidden');
-                    overlay.classList.remove('hidden');
-                    this.updateAccountPopupUI();
-                } else {
-                    this.closeAccountPopup();
-                }
-            }
-
-            closeAccountPopup() {
-                document.getElementById('accountPopup').classList.add('hidden');
-                document.getElementById('overlay').classList.add('hidden');
-            }
-
-            showSignUpForm() {
-                document.getElementById('signInForm').classList.add('hidden');
-                document.getElementById('signUpForm').classList.remove('hidden');
-                document.getElementById('signInError').classList.add('hidden');
-            }
-
-            showSignInForm() {
-                document.getElementById('signUpForm').classList.add('hidden');
-                document.getElementById('signInForm').classList.remove('hidden');
-                document.getElementById('signUpError').classList.add('hidden');
-            }
+    // Planet
+    const planetGeometry = new THREE.SphereGeometry(1, 64, 64);
+    const planetMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        color: { value: new THREE.Color('#50b1f7') }
+      },
+      vertexShader: `
+        varying vec3 vPosition;
+        void main() {
+          vPosition = position;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
         }
-
-        // --- THREE.JS BACKGROUND ---
-        function initThreeJSBackground() {
-            const container = document.getElementById('canvas-container');
-            const width = container.clientWidth;
-            const height = container.clientHeight;
-            
-            const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-            
-            renderer.setSize(width, height);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            container.appendChild(renderer.domElement);
-            
-            // Create particles
-            const particlesGeometry = new THREE.BufferGeometry();
-            const particleCount = 100;
-            
-            const posArray = new Float32Array(particleCount * 3);
-            for (let i = 0; i < particleCount * 3; i++) {
-                posArray[i] = (Math.random() - 0.5) * 10;
-            }
-            
-            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-            
-            const particlesMaterial = new THREE.PointsMaterial({
-                size: 0.05,
-                color: 0x6366f1,
-                transparent: true,
-                opacity: 0.8,
-                blending: THREE.AdditiveBlending
-            });
-            
-            const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
-            scene.add(particlesMesh);
-            
-            camera.position.z = 3;
-            
-            // Animation
-            function animate() {
-                requestAnimationFrame(animate);
-                
-                particlesMesh.rotation.x += 0.0005;
-                particlesMesh.rotation.y += 0.0005;
-                
-                renderer.render(scene, camera);
-            }
-            
-            animate();
-            
-            // Handle resize
-            window.addEventListener('resize', () => {
-                const width = container.clientWidth;
-                const height = container.clientHeight;
-                camera.aspect = width / height;
-                camera.updateProjectionMatrix();
-                renderer.setSize(width, height);
-            });
+      `,
+      fragmentShader: `
+        varying vec3 vPosition;
+        uniform vec3 color;
+        void main() {
+          float fade = smoothstep(0.0, 1.0, vPosition.y * 0.5 + 0.5);
+          float opacity = 1.0 - fade;
+          gl_FragColor = vec4(color, opacity * 0.8);
         }
-        
-        // --- GSAP ANIMATIONS ---
-        function initAnimations() {
-            // Fade up animation for elements
-            gsap.utils.toArray('.animate-fade-up').forEach(el => {
-                gsap.from(el, {
-                    y: 20,
-                    opacity: 0,
-                    duration: 0.8,
-                    ease: "power2.out",
-                    scrollTrigger: {
-                        trigger: el,
-                        start: "top 80%",
-                        toggleActions: "play none none none"
-                    }
-                });
-            });
-            
-            // Parallax effect
-            gsap.utils.toArray('.parallax').forEach(el => {
-                gsap.to(el, {
-                    yPercent: 15,
-                    ease: "none",
-                    scrollTrigger: {
-                        trigger: el,
-                        start: "top bottom",
-                        end: "bottom top",
-                        scrub: true
-                    }
-                });
-            });
-            
-            // Staggered card animations
-            gsap.utils.toArray('.card-hover').forEach((card, i) => {
-                gsap.from(card, {
-                    x: i % 2 === 0 ? -20 : 20,
-                    opacity: 0,
-                    duration: 0.6,
-                    delay: i * 0.1,
-                    ease: "back.out(1.7)",
-                    scrollTrigger: {
-                        trigger: card,
-                        start: "top 85%",
-                        toggleActions: "play none none none"
-                    }
-                });
-            });
-            
-            // Text reveal animation
-            gsap.utils.toArray('.text-reveal').forEach(el => {
-                gsap.from(el, {
-                    backgroundSize: "0% 100%",
-                    duration: 1.5,
-                    ease: "power2.out",
-                    scrollTrigger: {
-                        trigger: el,
-                        start: "top 80%",
-                        toggleActions: "play none none none"
-                    }
-                });
-            });
-            
-            // Button micro-interactions
-            gsap.utils.toArray('.btn-micro').forEach(btn => {
-                btn.addEventListener('mouseenter', () => {
-                    gsap.to(btn, {
-                        y: -2,
-                        duration: 0.2,
-                        ease: "power2.out"
-                    });
-                });
-                
-                btn.addEventListener('mouseleave', () => {
-                    gsap.to(btn, {
-                        y: 0,
-                        duration: 0.2,
-                        ease: "power2.out"
-                    });
-                });
-            });
-        }
+      `,
+      transparent: true,
+      depthWrite: true,
+      depthTest: true
+    });
 
-        // --- MAIN APP LOGIC ---
-        document.addEventListener('DOMContentLoaded', () => {
-            const authManager = new AuthManager();
-            let gapiInited = false;
-            let gisInited = false;
+    const planet = new THREE.Mesh(planetGeometry, planetMaterial);
+    planet.castShadow = true;
+    planet.receiveShadow = true;
+    scene.add(planet);
 
-            function gapiLoaded() {
-                gapi.load('client', initializeGapiClient);
-            }
+    // Ring with #161618
+    const ringGeometry = new THREE.TorusGeometry(1.5, 0.05, 32, 100);
+    const ringMaterial = new THREE.MeshStandardMaterial({
+      color: '#999',
+      metalness: 0.7,
+      roughness: 0.3,
+      transparent: true,
+      opacity: 0.4
+    });
 
-            async function initializeGapiClient() {
-                try {
-                    await gapi.client.init({
-                        apiKey: deobfuscate(GOOGLE_API_KEY_OBFUSCATED),
-                        discoveryDocs: [DISCOVERY_DOC],
-                    });
-                    gapiInited = true;
-                    const gisScript = document.createElement('script');
-                    gisScript.src = 'https://accounts.google.com/gsi/client';
-                    gisScript.async = true;
-                    gisScript.defer = true;
-                    gisScript.onload = gisLoaded;
-                    document.body.appendChild(gisScript);
-                } catch (error) {
-                     console.error("Error initializing GAPI client:", error);
-                    const apiErrorBanner = document.getElementById('api-error-banner');
-                    if (error?.result?.error?.status === 'PERMISSION_DENIED') {
-                        const activationUrl = error.result.error.details?.[0]?.metadata?.activationUrl;
-                        if (activationUrl) {
-                            apiErrorBanner.innerHTML = `<strong>Action Required:</strong> The Google Docs API is not enabled. <a href="${activationUrl}" target="_blank" class="font-bold underline">Click here to enable it</a>, then refresh the page.`;
-                            apiErrorBanner.classList.remove('hidden');
-                            return;
-                        }
-                    }
-                    apiErrorBanner.innerHTML = `<strong>Configuration Error:</strong> Could not initialize Google API.`;
-                    apiErrorBanner.classList.remove('hidden');
-                }
-            }
+    const ring = new THREE.Mesh(ringGeometry, ringMaterial);
 
-            function gisLoaded() {
-                gisInited = true;
-                tokenClient = google.accounts.oauth2.initTokenClient({
-                    client_id: deobfuscate(GOOGLE_CLIENT_ID_OBFUSCATED),
-                    scope: SCOPES,
-                    callback: (tokenResponse) => {
-                        if (tokenResponse && tokenResponse.access_token) {
-                            gapi.client.setToken(tokenResponse);
-                            updateGoogleAuthUI(true);
-                        } else {
-                            console.error("Invalid token response:", tokenResponse);
-                        }
-                    },
-                });
-                authManager.initializeAuth();
-            }
+    const ringHolder = new THREE.Object3D();
+    ringHolder.rotation.x = Math.PI / 2.1;
+    ringHolder.rotation.z = Math.PI / 8;
+    ringHolder.position.y = 0;
+    scene.add(ringHolder);
+    ringHolder.add(ring);
 
-            window.onload = gapiLoaded;
+    // Moon orbiting
+    const moonGeometry = new THREE.SphereGeometry(0.15, 32, 32);
+    const moonMaterial = new THREE.MeshStandardMaterial({
+      color: '#06b2fc',
+      emissive: '#06b2fc',
+      emissiveIntensity: 0.7,
+      depthWrite: true,
+      depthTest: true
+    });
 
-            const authorizeButton = document.getElementById('authorize_button');
-            const signoutButton = document.getElementById('signout_button');
-            
-            authorizeButton.onclick = () => {
-                if (tokenClient) {
-                    tokenClient.requestAccessToken({ prompt: 'consent' });
-                }
-            };
-            
-            signoutButton.onclick = () => {
-                const token = gapi.client.getToken();
-                if (token !== null) {
-                    google.accounts.oauth2.revoke(token.access_token, () => {
-                        gapi.client.setToken(null);
-                        updateGoogleAuthUI(false);
-                    });
-                }
-            };
+    const moon = new THREE.Mesh(moonGeometry, moonMaterial);
 
-            function updateGoogleAuthUI(isAuthorized) {
-                document.getElementById('google-link-section').classList.toggle('hidden', isAuthorized);
-                document.getElementById('doc-generator').classList.toggle('hidden', !isAuthorized);
-            }
+    const pivot = new THREE.Object3D();
+    ring.add(pivot);
+    pivot.add(moon);
+    moon.position.x = 1.5;
 
-            const generateDocBtn = document.getElementById('generate-doc-btn');
-            const aiEnhanceBtn = document.getElementById('ai-enhance-btn');
-            const statusEl = document.getElementById('generator-status');
+    // Correct render order to ensure occlusion
+    planet.renderOrder = 1;
+    moon.renderOrder = 2;
 
-            generateDocBtn.addEventListener('click', async () => {
-                const title = document.getElementById('doc-title').value.trim();
-                const content = document.getElementById('doc-content').value.trim();
-                if (!title || !content) {
-                    statusEl.textContent = 'Please provide a title and content.';
-                    statusEl.style.color = '#ef4444';
-                    return;
-                }
-                
-                // Check document limit for free users
-                if (authManager.userPlan === 'free' && authManager.documentCount >= authManager.maxDocuments) {
-                    statusEl.textContent = 'You\'ve reached your free document limit. Upgrade to Pro for unlimited documents.';
-                    statusEl.style.color = '#ef4444';
-                    return;
-                }
-                
-                statusEl.textContent = 'Creating document...';
-                statusEl.style.color = '#6366f1';
-                
-                authManager.showLoading(true);
-                try {
-                    const response = await gapi.client.docs.documents.create({
-                        title: title,
-                    });
-                    const docId = response.result.documentId;
-                    await gapi.client.docs.documents.batchUpdate({
-                        documentId: docId,
-                        requests: [{
-                            insertText: {
-                                text: content,
-                                location: { index: 1 },
-                            },
-                        }],
-                    });
-                    
-                    // Increment document count
-                    if (authManager.userPlan === 'free') {
-                        authManager.documentCount++;
-                        authManager.loadUsage();
-                    }
-                    
-                    statusEl.textContent = `Document created successfully!`;
-                    statusEl.style.color = '#10b981';
-                    const docLink = `https://docs.google.com/document/d/${docId}/edit`;
-                    statusEl.innerHTML += ` <a href="${docLink}" target="_blank" class="text-indigo-400 hover:underline">Open Document</a>`;
-                } catch (err) {
-                    statusEl.textContent = `Error: ${err?.result?.error?.message || err.message}`;
-                    statusEl.style.color = '#ef4444';
-                    console.error(err);
-                } finally {
-                    authManager.showLoading(false);
-                }
-            });
+    renderer.shadowMap.enabled = true;
 
-            const callOpenRouterApi = async (prompt) => {
-                statusEl.textContent = 'Trying fallback AI...';
-                statusEl.style.color = '#f59e0b';
-                try {
-                    const response = await fetch(OPENROUTER_API_URL, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${deobfuscate(OPENROUTER_API_KEY_OBFUSCATED)}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            model: DEFAULT_MODEL,
-                            messages: [{ role: "user", content: prompt }]
-                        })
-                    });
-                    if (!response.ok) throw new Error(`OpenRouter API call failed: ${response.status}`);
-                    const result = await response.json();
-                    return result.choices?.[0]?.message?.content;
-                } catch (error) {
-                    console.error("OpenRouter API Error:", error);
-                    throw error;
-                }
-            }
+    function animate() {
+      requestAnimationFrame(animate);
+      ring.rotation.z += 0.01;
+      pivot.rotation.z += 0.05;
+      planet.rotation.y += 0.003;
+      renderer.render(scene, camera);
+    }
 
-            const getAICompletion = async (prompt) => {
-                statusEl.textContent = 'AI is enhancing your text...';
-                statusEl.style.color = '#8b5cf6';
-                
-                authManager.showLoading(true);
-                try {
-                    const apiKey = ""; // Leave empty for Canvas environment
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }] })
-                    });
-                    if (!response.ok) throw new Error(`Gemini API call failed: ${response.status}`);
-                    const result = await response.json();
-                    const enhancedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (!enhancedText) throw new Error('No content returned from Gemini.');
-                    return enhancedText;
-                } catch (geminiError) {
-                    console.warn("Gemini API failed, trying OpenRouter fallback.", geminiError);
-                    return await callOpenRouterApi(prompt);
-                } finally {
-                    authManager.showLoading(false);
-                }
-            };
+    animate();
 
-            aiEnhanceBtn.addEventListener('click', async () => {
-                const contentEl = document.getElementById('doc-content');
-                const originalContent = contentEl.value.trim();
-                if (!originalContent) {
-                    statusEl.textContent = 'Please enter some content to enhance.';
-                    statusEl.style.color = '#ef4444';
-                    return;
-                }
-                
-                const shouldFormat = document.getElementById('ai-format-toggle').checked;
-                const prompt = shouldFormat 
-                    ? `You are a professional writing assistant. Take the following text and: 1) Expand upon it with relevant details, 2) Improve clarity and flow, 3) Ensure professional tone, 4) Format with proper headings, bullet points, and paragraphs where appropriate. Return only the enhanced text without any additional commentary. Original text: "${originalContent}"`
-                    : `You are a helpful writing assistant. Take the following text and expand upon it, making it more detailed, professional, and well-structured. Do not add any introductory or concluding remarks, just provide the enhanced text. Original text: "${originalContent}"`;
-                
-                try {
-                    const enhancedText = await getAICompletion(prompt);
-                    contentEl.value = enhancedText;
-                    statusEl.textContent = 'Text enhanced successfully!';
-                    statusEl.style.color = '#10b981';
-                    
-                    // Animate the textarea to show change
-                    gsap.from(contentEl, {
-                        backgroundColor: 'rgba(139, 92, 246, 0.2)',
-                        duration: 1,
-                        ease: "power2.out"
-                    });
-                } catch (finalError) {
-                    statusEl.textContent = `AI Error: ${finalError.message}`;
-                    statusEl.style.color = '#ef4444';
-                }
-            });
-        });
-    </script>
+    window.addEventListener('resize', () => {
+      const w = canvasContainer.clientWidth;
+      const h = canvasContainer.clientHeight;
+      renderer.setSize(w, h);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    });
+  </script>
 </body>
 </html>
