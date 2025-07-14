@@ -6,9 +6,10 @@
     <title>Modern Google Docs Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Supabase & Google API Libraries -->
+    <!-- Supabase, Google & Stripe API Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://js.stripe.com/v3/"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -136,6 +137,9 @@
         const SUPABASE_URL = 'https://zxeikhguvghtsqouyuyz.supabase.co';
         const SUPABASE_ANON_KEY_OBFUSCATED = 'e*y*J*h*b*G*c*i*O*i*J*I*U*z*I*1*N*i*I*s*I*n*R*5*c*C*I*6*I*k*p*X*V*C*J*9*.*e*y*J*p*c*3*M*i*O*i*J*z*d*X*B*h*Y*m*F*z*Z*S*I*s*I*n*J*l*Z*i*I*6*I*n*p*4*Z*W*l*r*a*G*d*1*d*m*d*o*d*H*N*x*b*3*V*5*d*X*l*6*I*i*w*i*c*m*9*s*Z*S*I*6*I*m*F*u*b*2*4*i*L*C*J*p*Y*X*Q*i*O*j*E*3*N*T*E*1*O*D*Y*y*M*z*A*s*I*m*V*4*c*C*I*6*M*j*A*2*N*z*E*2*M*j*I*z*M*H*0*.*a*9*j*W*r*_*h*1*d*g*y*i*_*S*T*7*s*g*K*D*A*S*D*H*i*7*h*k*M*j*S*W*O*R*7*8*V*q*2*f*M*N*0';
         const supabase = window.supabase.createClient(SUPABASE_URL, deobfuscate(SUPABASE_ANON_KEY_OBFUSCATED));
+        
+        const STRIPE_PUBLISHABLE_KEY_OBFUSCATED = 'p*k*_*t*e*s*t*_*5*1*R*8*v*i*v*G*r*s*d*J*U*1*d*j*q*O*m*J*c*5*5*2*p*6*s*q*z*K*V*m*1*Q*p*r*L*I*R*a*l*h*n*a*J*m*i*e*7*3*H*c*6*A*o*j*0*j*V*G*G*J*m*I*x*B*K*1*z*6*H*p*H*I*B*Q*Y*m*e*V*A*B*B*E*p*Q*S*8*8*0*0*w*g*y*G*p*O*4*y';
+        const stripe = Stripe(deobfuscate(STRIPE_PUBLISHABLE_KEY_OBFUSCATED));
 
         // --- GOOGLE API CONFIG ---
         const GOOGLE_API_KEY_OBFUSCATED = 'A*I*z*a*S*y*A*U*I*v*4*H*E*M*u*f*F*0*x*5*1*e*Z*q*L*p*e*o*R*t*J*X*8*W*n*r*n*i*o';
@@ -157,10 +161,19 @@
                 this.session = null;
                 this.hasActiveSubscription = false;
                 this.userPlan = 'free';
+                this.paymentLoading = false;
             }
 
             async initializeAuth() {
                 this.setupAuthEventListeners();
+                const { data: { session } } = await supabase.auth.getSession();
+                this.session = session;
+                this.user = session?.user || null;
+                if (this.user) {
+                    await this.loadUsage();
+                }
+                this.updateUI();
+
                 supabase.auth.onAuthStateChange(async (event, session) => {
                     this.session = session;
                     this.user = session?.user || null;
@@ -212,7 +225,6 @@
 
             async handleSignOut() {
                 await supabase.auth.signOut();
-                // Also sign out from Google if linked
                 const token = gapi.client.getToken();
                 if (token !== null) {
                     google.accounts.oauth2.revoke(token.access_token, () => {
@@ -224,23 +236,35 @@
 
             async handleUpgrade() {
                 if (!this.user) return alert('Please sign in to upgrade.');
+                if (this.paymentLoading) return;
+                this.paymentLoading = true;
+
                 const statusEl = document.getElementById('generator-status');
-                statusEl.textContent = 'Redirecting to checkout...';
+                statusEl.textContent = 'Preparing secure checkout...';
                 statusEl.style.color = 'blue';
+
                 try {
                     const { data, error } = await supabase.functions.invoke('create-checkout-session', {
                         body: { userId: this.user.id, email: this.user.email }
                     });
+
                     if (error) throw error;
+                    if (!data) throw new Error('No response from payment server');
+
                     if (data.url) {
                         window.location.href = data.url;
+                    } else if (data.sessionId) {
+                        const result = await stripe.redirectToCheckout({ sessionId: data.sessionId });
+                        if (result.error) throw result.error;
                     } else {
-                        throw new Error('No checkout URL received.');
+                        throw new Error('No valid payment method received');
                     }
                 } catch (error) {
-                    console.error('Stripe Checkout Error:', error);
-                    statusEl.textContent = `Error: ${error.message}`;
+                    console.error('Payment Error:', error);
+                    statusEl.textContent = `Payment failed: ${error.message.split('.')[0]}`;
                     statusEl.style.color = 'red';
+                } finally {
+                    this.paymentLoading = false;
                 }
             }
 
@@ -248,12 +272,23 @@
                 this.hasActiveSubscription = false;
                 this.userPlan = 'free';
                 if (!this.user) return;
+
                 try {
-                    const { data } = await supabase.from('user_subscriptions').select('status').eq('user_id', this.user.id).in('status', ['active']);
-                    this.hasActiveSubscription = data && data.length > 0;
-                    this.userPlan = this.hasActiveSubscription ? 'pro' : 'free';
+                    const { data: subscriptions, error: subError } = await supabase
+                        .from('user_subscriptions')
+                        .select('status')
+                        .eq('user_id', this.user.id)
+                        .in('status', ['active', 'pending']);
+
+                    if (subError) throw subError;
+
+                    const hasValidSubscription = subscriptions && subscriptions.length > 0;
+                    this.hasActiveSubscription = hasValidSubscription;
+                    this.userPlan = hasValidSubscription ? 'pro' : 'free';
                 } catch (error) {
                     console.error('Usage check failed:', error);
+                    this.hasActiveSubscription = false;
+                    this.userPlan = 'free';
                 } finally {
                     this.updateAccountPopupUI();
                 }
@@ -324,7 +359,6 @@
             let gapiInited = false;
             let gisInited = false;
 
-            // This function is the main entry point for all Google-related initializations.
             function gapiLoaded() {
                 gapi.load('client', initializeGapiClient);
             }
@@ -336,12 +370,11 @@
                         discoveryDocs: [DISCOVERY_DOC],
                     });
                     gapiInited = true;
-                    // Now that GAPI is ready, dynamically load the GIS script.
                     const gisScript = document.createElement('script');
                     gisScript.src = 'https://accounts.google.com/gsi/client';
                     gisScript.async = true;
                     gisScript.defer = true;
-                    gisScript.onload = gisLoaded; // Set the callback for when GIS loads
+                    gisScript.onload = gisLoaded;
                     document.body.appendChild(gisScript);
                 } catch (error) {
                      console.error("Error initializing GAPI client:", error);
@@ -373,14 +406,10 @@
                         }
                     },
                 });
-                // Now that both Google libraries are ready, initialize the main app auth.
                 authManager.initializeAuth();
             }
 
-            // The GAPI script in the <head> doesn't have an onload, so we can't reliably use it.
-            // Instead, we'll wait for the window to load, which is a good signal that external scripts are ready.
             window.onload = gapiLoaded;
-
 
             const authorizeButton = document.getElementById('authorize_button');
             const signoutButton = document.getElementById('signout_button');
