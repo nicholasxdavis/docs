@@ -189,7 +189,7 @@
         }
         
         ::-webkit-scrollbar-thumb:hover {
-            background: #06b2fc;
+            background: #50b1f7;
         }
         
         /* Textarea styling */
@@ -200,7 +200,7 @@
         }
         
         .custom-textarea:focus {
-            border-color: #06b2fc;
+            border-color: #50b1f7;
             box-shadow: 0 0 0 2px rgba(6, 178, 252, 0.2);
         }
         
@@ -562,7 +562,7 @@
 
             const statusEl = document.getElementById('generator-status');
             statusEl.textContent = 'Preparing secure checkout...';
-            statusEl.style.color = '#6366f1';
+            statusEl.style.color = '#50b1f7';
 
             try {
                 const { data, error } = await supabase.functions.invoke('create-checkout-session', {
@@ -729,7 +729,7 @@
         
         const particlesMaterial = new THREE.PointsMaterial({
             size: 0.05,
-            color: 0x6366f1,
+            color: 0x50b1f7,
             transparent: true,
             opacity: 0.8,
             blending: THREE.AdditiveBlending
@@ -949,7 +949,7 @@
             }
             
             statusEl.textContent = 'Creating document...';
-            statusEl.style.color = '#6366f1';
+            statusEl.style.color = '#50b1f7';
             
             authManager.showLoading(true);
             try {
@@ -976,7 +976,7 @@
                 statusEl.textContent = `Document created successfully!`;
                 statusEl.style.color = '#10b981';
                 const docLink = `https://docs.google.com/document/d/${docId}/edit`;
-                statusEl.innerHTML += ` <a href="${docLink}" target="_blank" class="text-indigo-400 hover:underline">Open Document</a>`;
+                statusEl.innerHTML += ` <a href="${docLink}" target="_blank" class="text-[#50b1f7] hover:underline">Open Document</a>`;
             } catch (err) {
                 statusEl.textContent = `Error: ${err?.result?.error?.message || err.message}`;
                 statusEl.style.color = '#ef4444';
