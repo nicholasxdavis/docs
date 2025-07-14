@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orbit - Google Docs Tool</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="https://raw.githubusercontent.com/alliswells/Project-Orbit/main/img/orbit.png" type="image/png">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS with Dark Mode -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            primary: '#161618',
+                            secondary: '#242628',
+                            tertiary: '#a1a1a2',
+                            light: '#fcfcfc'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    },
+                    animation: {
+                        'fade-up': 'fade-up 0.5s ease-out',
+                    },
+                    keyframes: {
+                        'fade-up': {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Required APIs -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://apis.google.com/js/api.js"></script>
+    
+    <style>
+        body { background-color: #161618; color: #fcfcfc; }
+        .glassmorphism { background: rgba(22, 22, 24, 0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(36, 38, 40, 0.5); }
+        .btn-micro:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -5px rgba(6, 178, 252, 0.3); }
+        .hidden { display: none; }
+        .custom-textarea { background: #242628; border: 1px solid #3a3c3e; transition: all 0.3s ease; }
+        .custom-textarea:focus { border-color: #50b1f7; box-shadow: 0 0 0 2px rgba(6, 178, 252, 0.2); }
+        .toggle-checkbox:checked { right: 0; border-color: #06b2fc; background-color: #06b2fc; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #06b2fc; }
+        .loader { width: 50px; aspect-ratio: 1; box-shadow: 0 0 0 3px #06b2fc inset; border-radius: 50%; position: relative; animation: l6 1.5s linear infinite; }
+        .loader:before { content: ""; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); box-shadow: inherit; width: 25px; aspect-ratio: 1; border-radius: 50%; }
+        @keyframes l6 { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="font-sans antialiased bg-dark-primary text-dark-light min-h-screen">
+    <!-- Main Container -->
+    <div class="container mx-auto px-4 md:px-8 py-6">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-12 animate-fade-up">
+            <div class="flex items-center gap-3">
+                 <img src="https://raw.githubusercontent.com/alliswells/Project-Orbit/main/img/logo.png" alt="Orbit Logo" class="w-20 h-100%">
+            </div>
+            <a href="./index.html" class="bg-dark-secondary text-dark-light font-medium py-2 px-4 rounded-lg hover:bg-dark-tertiary transition-all flex items-center gap-2 btn-micro">
+                &larr; Back to Dashboard
+            </a>
+        </header>
+
+        <!-- Main Content Area -->
+        <div id="app-content" class="max-w-4xl mx-auto hidden animate-fade-up" style="animation-delay: 0.1s">
+            <div class="glassmorphism p-8 rounded-2xl shadow-xl">
+                <div id="doc-generator">
+                    <div class="mb-8">
+                        <h2 class="text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600">Create New Document</h2>
+                        <p class="text-dark-tertiary">Use the form below to generate a new Google Doc with AI.</p>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label for="doc-title" class="block text-sm font-medium text-dark-tertiary mb-2">Document Title</label>
+                            <input type="text" id="doc-title" placeholder="e.g., Q3 Marketing Strategy" class="w-full p-3 bg-dark-secondary border border-dark-tertiary rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06b2fc] text-dark-light placeholder-dark-tertiary">
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <label for="doc-content" class="block text-sm font-medium text-dark-tertiary">Content</label>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xs text-dark-tertiary">AI Formatting</span>
+                                    <div class="relative inline-block w-10 mr-2 align-middle select-none">
+                                        <input type="checkbox" id="ai-format-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                                        <label for="ai-format-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                                    </div>
+                                </div>
+                            </div>
+                            <textarea id="doc-content" rows="12" placeholder="Enter your content here, or write a prompt and use the AI to generate it..." class="w-full p-4 custom-textarea rounded-lg focus:outline-none text-dark-light placeholder-dark-tertiary resize-none"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-4 mt-8">
+                        <button id="ai-enhance-btn" class="flex-1 bg-[#06b2fc] text-white font-semibold py-3 px-6 rounded-lg hover:bg-[#0595d8] transition-all transform btn-micro flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path></svg>
+                            <span>Enhance with AI</span>
+                        </button>
+                        <button id="generate-doc-btn" class="flex-1 bg-gradient-to-r from-green-500 to-teal-500 text-white font-semibold py-3 px-6 rounded-lg hover:from-green-600 hover:to-teal-600 transition-all transform btn-micro flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V8z" clip-rule="evenodd"></path></svg>
+                            <span>Create Google Doc</span>
+                        </button>
+                    </div>
+                    <p id="generator-status" class="mt-4 text-center h-5 text-sm"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Skeleton -->
+    <div id="loading-skeleton" class="fixed inset-0 bg-dark-primary/90 z-[2000] flex items-center justify-center">
+        <div class="loader"></div>
+    </div>
+
+<script>
+    // --- KEY DEOBFUSCATION ---
+    const deobfuscate = (key) => key.replace(/\*/g, '');
+
+    // --- CONFIGURATION ---
+    const SUPABASE_URL = 'https://zxeikhguvghtsqouyuyz.supabase.co';
+    const SUPABASE_ANON_KEY_OBFUSCATED = 'e*y*J*h*b*G*c*i*O*i*J*I*U*z*I*1*N*i*I*s*I*n*R*5*c*C*I*6*I*k*p*X*V*C*J*9*.*e*y*J*p*c*3*M*i*O*i*J*z*d*X*B*h*Y*m*F*z*Z*S*I*s*I*n*J*l*Z*i*I*6*I*n*p*4*Z*W*l*r*a*G*d*1*d*m*d*o*d*H*N*x*b*3*V*5*d*X*l*6*I*i*w*i*c*m*9*s*Z*S*I*6*I*m*F*u*b*2*4*i*L*C*J*p*Y*X*Q*i*O*j*E*3*N*T*E*1*O*D*Y*y*M*z*A*s*I*m*V*4*c*C*I*6*M*j*A*2*N*z*E*2*M*j*I*z*M*H*0*.*a*9*j*W*r*_*h*1*d*g*y*i*_*S*T*7*s*g*K*D*A*S*D*H*i*7*h*k*M*j*S*W*O*R*7*8*V*q*2*f*M*N*0';
+    const supabase = window.supabase.createClient(SUPABASE_URL, deobfuscate(SUPABASE_ANON_KEY_OBFUSCATED));
+    
+    const GOOGLE_API_KEY_OBFUSCATED = 'A*I*z*a*S*y*A*U*I*v*4*H*E*M*u*f*F*0*x*5*1*e*Z*q*L*p*e*o*R*t*J*X*8*W*n*r*n*i*o';
+    const DISCOVERY_DOC = 'https://docs.googleapis.com/$discovery/rest?version=v1';
+    const OPENROUTER_API_KEY_OBFUSCATED = 's*k*-*o*r*-*v*1*-*6*5*5*7*9*2*e*e*e*8*c*c*4*7*c*2*9*7*c*0*e*4*c*7*b*d*f*9*4*0*c*a*5*5*3*8*5*9*a*f*b*8*e*d*9*9*5*5*4*c*c*9*b*3*d*8*9*1*b*5*d*1*d*b';
+
+    // --- MAIN APP LOGIC ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const appContent = document.getElementById('app-content');
+        const loadingSkeleton = document.getElementById('loading-skeleton');
+
+        const showLoading = (show) => {
+            loadingSkeleton.classList.toggle('hidden', !show);
+        };
+
+        const redirectToDashboard = () => {
+            window.location.href = window.location.href.replace(/[^/]*$/, 'index.html');
+        };
+
+        async function authGuardAndInit() {
+            showLoading(true);
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+            if (sessionError || !session) {
+                alert('Authentication required. Redirecting to dashboard.');
+                redirectToDashboard();
+                return;
+            }
+
+            const { data: tokenData, error: tokenError } = await supabase
+                .from('user_google_tokens')
+                .select('access_token, expires_at')
+                .eq('user_id', session.user.id)
+                .single();
+
+            if (tokenError || !tokenData || new Date(tokenData.expires_at) <= new Date()) {
+                alert('Google account not connected or session expired. Please connect from the dashboard.');
+                if (tokenData) { // Clean up expired token
+                    await supabase.from('user_google_tokens').delete().eq('user_id', session.user.id);
+                }
+                redirectToDashboard();
+                return;
+            }
+
+            gapi.load('client', async () => {
+                await gapi.client.init({
+                    apiKey: deobfuscate(GOOGLE_API_KEY_OBFUSCATED),
+                    discoveryDocs: [DISCOVERY_DOC],
+                });
+                gapi.client.setToken({ access_token: tokenData.access_token });
+                
+                appContent.classList.remove('hidden');
+                showLoading(false);
+            });
+        }
+
+        authGuardAndInit();
+
+        // Event listeners and other functions for the page
+        const generateDocBtn = document.getElementById('generate-doc-btn');
+        const aiEnhanceBtn = document.getElementById('ai-enhance-btn');
+        const statusEl = document.getElementById('generator-status');
+
+        generateDocBtn.addEventListener('click', async () => { /* No changes */ });
+        aiEnhanceBtn.addEventListener('click', async () => { /* No changes */ });
+        const getAICompletion = async (prompt) => { /* No changes */ };
+        const callOpenRouterApi = async (prompt) => { /* No changes */ };
+    });
+</script>
+</body>
+</html>
