@@ -11,13 +11,10 @@
     <meta property="og:type" content="website">
     <title>Orbit - AI Workspace</title>
     
-    <!-- Favicon -->
     <link rel="icon" href="https://raw.githubusercontent.com/alliswells/Project-Orbit/main/img/orbit.png" type="image/png">
     
-    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS with Dark Mode -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -65,14 +62,11 @@
         }
     </script>
     
-    <!-- GSAP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     
-    <!-- Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     
-    <!-- Required APIs -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://apis.google.com/js/api.js"></script>
     <script src="https://js.stripe.com/v3/"></script>
@@ -151,15 +145,11 @@
     </style>
 </head>
 <body class="font-sans antialiased bg-dark-primary text-dark-light min-h-screen">
-    <!-- 3D Background Canvas -->
     <div id="canvas-container" class="fixed inset-0 -z-10 opacity-20"></div>
     
-    <!-- API Error Banner -->
     <div id="api-error-banner" class="hidden bg-red-600 text-white p-4 text-center fixed top-0 left-0 w-full z-[2000] glassmorphism"></div>
 
-    <!-- Main Container -->
     <div class="container mx-auto px-4 md:px-8 py-6">
-        <!-- Header -->
         <header class="flex justify-between items-center mb-12 animate-fade-up">
             <div class="flex items-center gap-3">
                  <img src="https://raw.githubusercontent.com/alliswells/Project-Orbit/main/img/logo.png" alt="Orbit Logo" class="w-20 h-100%">
@@ -170,36 +160,30 @@
             </button>
         </header>
 
-        <!-- Main Content Area -->
-        <div id="app-content" class="max-w-4xl mx-auto animate-fade-up" style="animation-delay: 0.1s">
+        <div id="app-content" class="max-w-4xl mx-auto animate-fade-up hidden" style="animation-delay: 0.1s">
             <div class="glassmorphism p-8 rounded-2xl shadow-xl">
-                <!-- NEW: Workspace Connector with Icons -->
                 <div id="workspace-connector" class="mb-12 text-center">
                     <h2 class="text-3xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600">Connect Your Workspace</h2>
                     <p class="mb-8 text-dark-tertiary">Link your Google Account to enable the AI-powered tools.</p>
                     <div id="google-services-icons" class="flex justify-center items-center gap-4 md:gap-8 flex-wrap">
-                        <!-- Google Docs Icon -->
                         <a href="#" class="service-icon-link text-center no-underline" data-service="docs">
                             <div class="service-icon p-4 bg-dark-secondary rounded-2xl transition-all duration-300 cursor-pointer card-hover">
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Google_Docs_logo_%282020%29.svg/1024px-Google_Docs_logo_%282020%29.svg.png" alt="Google Docs" class="h-12 w-12" onerror="this.onerror=null; this.src='https://placehold.co/48x48/242628/fcfcfc?text=Docs';">
                             </div>
                             <p class="mt-2 text-sm text-dark-tertiary">Docs</p>
                         </a>
-                        <!-- Google Sheets Icon -->
                         <a href="#" class="service-icon-link text-center no-underline" data-service="sheets">
                              <div class="service-icon p-4 bg-dark-secondary rounded-2xl transition-all duration-300 cursor-pointer card-hover">
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Google_Sheets_logo_%282020%29.svg/1024px-Google_Sheets_logo_%282020%29.svg.png" alt="Google Sheets" class="h-12 w-12" onerror="this.onerror=null; this.src='https://placehold.co/48x48/242628/fcfcfc?text=Sheets';">
                             </div>
                              <p class="mt-2 text-sm text-dark-tertiary">Sheets</p>
                         </a>
-                        <!-- Google Slides Icon -->
                         <a href="#" class="service-icon-link text-center no-underline" data-service="slides">
                             <div class="service-icon p-4 bg-dark-secondary rounded-2xl transition-all duration-300 cursor-pointer card-hover">
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Google_Slides_logo_%282020%29.svg/1024px-Google_Slides_logo_%282020%29.svg.png" alt="Google Slides" class="h-12 w-12" onerror="this.onerror=null; this.src='https://placehold.co/48x48/242628/fcfcfc?text=Slides';">
                             </div>
                             <p class="mt-2 text-sm text-dark-tertiary">Slides</p>
                         </a>
-                        <!-- Google Forms Icon -->
                         <a href="#" class="service-icon-link text-center no-underline" data-service="forms">
                             <div class="service-icon p-4 bg-dark-secondary rounded-2xl transition-all duration-300 cursor-pointer card-hover">
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Google_Forms_logo_%282020%29.svg/1024px-Google_Forms_logo_%282020%29.svg.png" alt="Google Forms" class="h-12 w-12" onerror="this.onerror=null; this.src='https://placehold.co/48x48/242628/fcfcfc?text=Forms';">
@@ -210,7 +194,6 @@
                 </div>
             </div>
             
-            <!-- Features Section -->
             <div class="mt-16 glassmorphism p-8 rounded-2xl shadow-xl">
                 <h2 class="text-2xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600">Powerful Features</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -238,15 +221,23 @@
                 </div>
             </div>
         </div>
+        <div id="auth-prompt" class="text-center p-10 glassmorphism rounded-2xl shadow-xl max-w-md mx-auto animate-fade-up">
+            <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-[#06b2fc] flex items-center justify-center">
+                <img src="https://raw.githubusercontent.com/alliswells/Project-Orbit/main/img/logo.png" alt="Orbit Logo" class="w-12 h-12">
+            </div>
+            <h2 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 mb-2">Welcome to Orbit</h2>
+            <p class="text-dark-tertiary mb-8">Sign in to start creating AI-powered documents</p>
+            <button id="masterSignInBtn" class="w-full bg-[#06b2fc] text-white p-3 rounded-lg hover:bg-[#0595d8] transition-all transform btn-micro">
+                Sign In or Sign Up
+            </button>
+        </div>
     </div>
 
-    <!-- Account Popup -->
     <div id="overlay" class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-70 hidden z-[1000] backdrop-blur-sm"></div>
     <div id="accountPopup" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-sm z-[1001] hidden">
         <div class="bg-dark-secondary rounded-xl shadow-2xl p-6 relative border border-dark-tertiary/30 mx-4 popup-content">
             <button id="closeAccountPopupBtn" class="absolute top-4 right-4 text-dark-tertiary hover:text-dark-light transition text-2xl leading-none">&times;</button>
             
-            <!-- Logged Out View -->
             <div id="loggedOutView">
                 <div id="signInForm">
                     <h3 class="text-2xl font-bold mb-6 text-dark-light">Sign In</h3>
@@ -266,7 +257,6 @@
                 </div>
             </div>
 
-            <!-- Logged In View -->
             <div id="accountActions" class="hidden">
                 <div class="flex items-center gap-3 mb-6">
                     <div class="w-12 h-12 rounded-full bg-[#06b2fc] flex items-center justify-center text-white font-bold">
@@ -295,7 +285,6 @@
         </div>
     </div>
     
-    <!-- Loading Skeleton -->
     <div id="loading-skeleton" class="fixed inset-0 bg-dark-primary/90 z-[2000] flex items-center justify-center hidden">
         <div class="loader"></div>
     </div>
@@ -353,10 +342,11 @@
             supabase.auth.onAuthStateChange(async (event, session) => {
                 this.session = session;
                 this.user = session?.user || null;
+                if (event === 'SIGNED_OUT') {
+                    this.handleGoogleSignOut(false);
+                }
                 if (this.user) {
                     await this.loadUsage();
-                } else {
-                    this.handleGoogleSignOut(false);
                 }
                 this.updateUI();
             });
@@ -368,6 +358,7 @@
 
         setupAuthEventListeners() {
             document.getElementById('accountBtn').addEventListener('click', () => this.toggleAccountPopup());
+            document.getElementById('masterSignInBtn').addEventListener('click', () => this.toggleAccountPopup(true));
             document.getElementById('signOutBtn').addEventListener('click', () => this.handleSignOut());
             document.getElementById('closeAccountPopupBtn').addEventListener('click', () => this.closeAccountPopup());
             document.getElementById('overlay').addEventListener('click', () => this.closeAccountPopup());
@@ -378,15 +369,50 @@
             document.getElementById('showSignInBtn').addEventListener('click', (e) => { e.preventDefault(); this.showSignInForm(); });
         }
         
-        async handleSignIn() { /* No changes */ }
+        async handleSignIn() {
+            const email = document.getElementById('signInEmail').value;
+            const password = document.getElementById('signInPassword').value;
+            const signInError = document.getElementById('signInError');
+            if (!email || !password) {
+                signInError.textContent = 'Please fill in all fields';
+                signInError.classList.remove('hidden');
+                return;
+            }
+            this.showLoading(true);
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) {
+                signInError.textContent = error.message;
+                signInError.classList.remove('hidden');
+                this.showLoading(false);
+            } else {
+                this.closeAccountPopup();
+                this.showLoading(false);
+            }
+        }
         
-        async handleSignUp() { /* No changes */ }
+        async handleSignUp() {
+            const email = document.getElementById('signUpEmail').value;
+            const password = document.getElementById('signUpPassword').value;
+            const signUpError = document.getElementById('signUpError');
+            if (!email || password.length < 6) {
+                signUpError.textContent = 'Password must be at least 6 characters.';
+                signUpError.classList.remove('hidden');
+                return;
+            }
+            this.showLoading(true);
+            const { error } = await supabase.auth.signUp({ email, password });
+            if (error) {
+                signUpError.textContent = error.message;
+                signUpError.classList.remove('hidden');
+            } else {
+                alert('Check your email for a confirmation link!');
+                this.closeAccountPopup();
+            }
+            this.showLoading(false);
+        }
 
         async handleSignOut() {
             this.showLoading(true);
-            if (this.user) {
-                await supabase.from('user_google_tokens').delete().eq('user_id', this.user.id);
-            }
             await supabase.auth.signOut();
             this.closeAccountPopup();
             this.showLoading(false);
@@ -406,26 +432,129 @@
             if(showLoader) this.showLoading(false);
         }
 
-        async handleUpgrade() { /* No changes */ }
-        async loadUsage() { /* No changes */ }
+        async handleUpgrade() { /* Kept from your implementation */ }
+        async loadUsage() { /* Kept from your implementation */ }
+
         updateUI() {
+            const isLoggedIn = !!this.user;
+            document.getElementById('app-content').classList.toggle('hidden', !isLoggedIn);
+            document.getElementById('auth-prompt').classList.toggle('hidden', isLoggedIn);
             this.updateAccountPopupUI();
-            if (!threeJSInitialized) {
+            if (isLoggedIn && !threeJSInitialized) {
                 initThreeJSBackground();
                 initAnimations();
                 threeJSInitialized = true;
             }
         }
-        updateAccountPopupUI() { /* No changes */ }
-        toggleAccountPopup(forceOpen = false) { /* No changes */ }
-        closeAccountPopup() { /* No changes */ }
-        showSignUpForm() { /* No changes */ }
-        showSignInForm() { /* No changes */ }
+
+        updateAccountPopupUI() {
+            const loggedOutView = document.getElementById('loggedOutView');
+            const accountActions = document.getElementById('accountActions');
+            const proBadge = document.getElementById('proBadge');
+
+            if (this.user) {
+                document.getElementById('accountUserEmail').textContent = this.user.email;
+                document.getElementById('accountUserPlan').textContent = this.userPlan === 'pro' ? 'Pro' : 'Free';
+                proBadge.classList.toggle('hidden', !this.hasActiveSubscription);
+                document.getElementById('upgradeToProBtn').classList.toggle('hidden', this.hasActiveSubscription);
+                document.getElementById('upgrade-prompt').classList.toggle('hidden', this.hasActiveSubscription);
+                
+                const initials = this.user.email.slice(0, 2).toUpperCase();
+                document.getElementById('accountInitials').textContent = initials;
+                
+                loggedOutView.classList.add('hidden');
+                accountActions.classList.remove('hidden');
+            } else {
+                loggedOutView.classList.remove('hidden');
+                accountActions.classList.add('hidden');
+                this.showSignInForm();
+                proBadge.classList.add('hidden');
+            }
+        }
+
+        toggleAccountPopup(forceOpen = false) {
+            const popup = document.getElementById('accountPopup');
+            const overlay = document.getElementById('overlay');
+            if (forceOpen || popup.classList.contains('hidden')) {
+                popup.classList.remove('hidden');
+                overlay.classList.remove('hidden');
+                this.updateAccountPopupUI();
+            } else {
+                this.closeAccountPopup();
+            }
+        }
+        closeAccountPopup() {
+            document.getElementById('accountPopup').classList.add('hidden');
+            document.getElementById('overlay').classList.add('hidden');
+        }
+        showSignUpForm() {
+            document.getElementById('signInForm').classList.add('hidden');
+            document.getElementById('signUpForm').classList.remove('hidden');
+            document.getElementById('signInError').classList.add('hidden');
+        }
+        showSignInForm() {
+            document.getElementById('signUpForm').classList.add('hidden');
+            document.getElementById('signInForm').classList.remove('hidden');
+            document.getElementById('signUpError').classList.add('hidden');
+        }
     }
 
     // --- VISUALS & ANIMATIONS ---
-    function initThreeJSBackground() { /* No changes */ }
-    function initAnimations() { /* No changes */ }
+    function initThreeJSBackground() {
+        const container = document.getElementById('canvas-container');
+        if (!container) return;
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(width, height);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+        
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particleCount = 100;
+        const posArray = new Float32Array(particleCount * 3);
+        for (let i = 0; i < particleCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 10;
+        }
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.05,
+            color: 0x50b1f7,
+            transparent: true,
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending
+        });
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+        camera.position.z = 3;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            particlesMesh.rotation.x += 0.0005;
+            particlesMesh.rotation.y += 0.0005;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            const newWidth = container.clientWidth;
+            const newHeight = container.clientHeight;
+            camera.aspect = newWidth / newHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(newWidth, newHeight);
+        });
+    }
+
+    function initAnimations() {
+        gsap.utils.toArray('.animate-fade-up').forEach(el => {
+            gsap.from(el, { y: 20, opacity: 0, duration: 0.8, ease: "power2.out", scrollTrigger: { trigger: el, start: "top 80%", toggleActions: "play none none none" } });
+        });
+        gsap.utils.toArray('.card-hover').forEach((card, i) => {
+            gsap.from(card, { x: i % 2 === 0 ? -20 : 20, opacity: 0, duration: 0.6, delay: i * 0.1, ease: "back.out(1.7)", scrollTrigger: { trigger: card, start: "top 85%", toggleActions: "play none none none" } });
+        });
+    }
 
     // --- GLOBAL FUNCTIONS ---
     function updateGoogleAuthUI(isAuthorized) {
@@ -442,7 +571,7 @@
             return;
         }
 
-        const isGoogleAuthed = !!gapi.client.getToken();
+        const isGoogleAuthed = !!gapi.client.getToken()?.access_token;
         if (!isGoogleAuthed) {
             pendingService = service;
             tokenClient.requestAccessToken({ prompt: 'consent' });
@@ -504,9 +633,7 @@
     // --- MAIN APP LOGIC ---
     document.addEventListener('DOMContentLoaded', () => {
         authManager = new AuthManager();
-        let gapiInited = false;
-        let gisInited = false;
-
+        
         function gapiLoaded() {
             gapi.load('client', initializeGapiClient);
         }
@@ -517,7 +644,6 @@
                     apiKey: deobfuscate(GOOGLE_API_KEY_OBFUSCATED),
                     discoveryDocs: [DISCOVERY_DOC],
                 });
-                gapiInited = true;
                 const gisScript = document.createElement('script');
                 gisScript.src = 'https://accounts.google.com/gsi/client';
                 gisScript.async = true;
@@ -530,7 +656,6 @@
         }
 
         function gisLoaded() {
-            gisInited = true;
             tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: deobfuscate(GOOGLE_CLIENT_ID_OBFUSCATED),
                 scope: SCOPES,
@@ -550,7 +675,9 @@
                 },
             });
             authManager.initializeAuth().then(() => {
-                loadGoogleToken();
+                if (authManager.user) {
+                    loadGoogleToken();
+                }
             });
         }
 
