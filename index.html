@@ -9,7 +9,7 @@
     <meta property="og:title" content="Orbit - AI Workspace | Smart Document Generator">
     <meta property="og:description" content="Create professional documents with AI assistance in seconds.">
     <meta property="og:type" content="website">
-    <title>Orbit - AI Workspace</title>
+    <title>Orbit Workspace</title>
     
     <link rel="icon" href="https://nicholasxdavis.github.io/docs/img/orbit.png" type="image/png">
     
@@ -163,7 +163,7 @@
         <div id="app-content" class="max-w-4xl mx-auto animate-fade-up hidden" style="animation-delay: 0.1s">
             <div class="glassmorphism p-8 rounded-2xl shadow-xl">
                 <div id="workspace-connector" class="mb-12 text-center">
-                    <h2 class="text-3xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-400">Connect Your Workspace</h2>
+                    <h2 class="text-3xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-400">Your Workspace</h2>
                     <p class="mb-8 text-dark-tertiary">Link your Google Account to enable the AI-powered tools.</p>
                     <div id="google-services-icons" class="flex justify-center items-center gap-4 md:gap-8 flex-wrap">
     <a href="#" class="service-icon-link text-center no-underline" data-service="docs">
@@ -601,21 +601,26 @@ function updateGoogleAuthUI(isAuthorized) {
         if (error) console.error('Error saving Google token:', error);
     }
 
-    async function loadGoogleToken() {
-        if (!authManager.user) {
-            updateGoogleAuthUI(false);
-            return;
-        }
+async function loadGoogleToken() {
+    if (!authManager.user) {
+        updateGoogleAuthUI(false);
+        return;
+    }
 
+    try {
         const { data, error } = await supabase
             .from('user_google_tokens')
             .select('access_token, expires_at')
             .eq('user_id', authManager.user.id)
             .single();
 
-        if (error && error.code !== 'PGRST116') { // Ignore 'no rows found' error
-            console.error('Error loading Google token:', error);
-            updateGoogleAuthUI(false);
+        if (error) {
+            if (error.code === 'PGRST116') {
+                // No token exists yet - expected case
+                return;
+            }
+            console.error('Supabase error:', error);
+            showErrorToast('Failed to connect to database');
             return;
         }
 
@@ -624,11 +629,17 @@ function updateGoogleAuthUI(isAuthorized) {
             updateGoogleAuthUI(true);
         } else {
             updateGoogleAuthUI(false);
-            if (data) { // Clean up expired token from DB
-                await supabase.from('user_google_tokens').delete().eq('user_id', authManager.user.id);
+            if (data) {
+                await supabase.from('user_google_tokens')
+                    .delete()
+                    .eq('user_id', authManager.user.id);
             }
         }
+    } catch (err) {
+        console.error('Failed to load Google token:', err);
+        showErrorToast('Authentication service unavailable');
     }
+}
 
     // --- MAIN APP LOGIC ---
     document.addEventListener('DOMContentLoaded', () => {
