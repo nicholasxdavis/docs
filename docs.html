@@ -251,80 +251,52 @@
         }
 
         async function generateDocument() {
-    const title = document.getElementById('doc-title').value.trim();
-    const content = document.getElementById('doc-content').value.trim();
+            const title = document.getElementById('doc-title').value.trim();
+            const content = document.getElementById('doc-content').value.trim();
 
-    if (!title || !content) {
-        statusEl.textContent = 'Please provide a title and content.';
-        statusEl.style.color = '#ef4444';
-        return;
-    }
+            if (!title || !content) {
+                statusEl.textContent = 'Please provide a title and content.';
+                statusEl.style.color = '#ef4444';
+                return;
+            }
 
-    statusEl.textContent = 'Creating document...';
-    statusEl.style.color = '#50b1f7';
-    showLoading(true);
+            statusEl.textContent = 'Creating document...';
+            statusEl.style.color = '#50b1f7';
+            showLoading(true);
 
-    try {
-        // First get the current session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError || !session) {
-            throw new Error('Session expired. Please refresh the page.');
-        }
+            try {
+                const response = await gapi.client.docs.documents.create({ title: title });
+                const docId = response.result.documentId;
 
-        // Check if user has reached their limit
-        const { data: usageData, error: usageError } = await supabase
-            .from('user_usage')
-            .select('document_count, is_pro')
-            .eq('user_id', session.user.id)
-            .single();
+                try {
+                    await gapi.client.docs.documents.batchUpdate({
+                        documentId: docId,
+                        requests: [{
+                            insertText: {
+                                text: content,
+                                location: { index: 1 }
+                            }
+                        }]
+                    });
 
-        if (usageError) throw usageError;
-        
-        if (!usageData.is_pro && usageData.document_count >= 20) {
-            throw new Error('You have reached your free document limit. Upgrade to Pro for unlimited documents.');
-        }
-
-        // Create the document
-        const response = await gapi.client.docs.documents.create({ title: title });
-        const docId = response.result.documentId;
-
-        // Insert content into the document
-        await gapi.client.docs.documents.batchUpdate({
-            documentId: docId,
-            requests: [{
-                insertText: {
-                    text: content,
-                    location: { index: 1 }
+                    statusEl.innerHTML = `Document created! <a href="https://docs.google.com/document/d/${docId}/edit" target="_blank" class="text-[#50b1f7] hover:underline">Open Document</a>`;
+                    statusEl.style.color = '#10b981';
+                } catch (updateError) {
+                    statusEl.innerHTML = `Document created but content couldn't be added. <a href="https://docs.google.com/document/d/${docId}/edit" target="_blank" class="text-[#50b1f7] hover:underline">Open Document</a>`;
+                    statusEl.style.color = '#f59e0b';
+                    console.error('Content update failed:', updateError);
                 }
-            }]
-        });
-
-        // Increment the document count - using upsert to handle cases where record doesn't exist
-        const { error: updateError } = await supabase
-            .from('user_usage')
-            .upsert({
-                user_id: session.user.id,
-                document_count: (usageData?.document_count || 0) + 1,
-                updated_at: new Date().toISOString()
-            }, {
-                onConflict: 'user_id'
-            });
-
-        if (updateError) throw updateError;
-        
-        statusEl.innerHTML = `Document created! <a href="https://docs.google.com/document/d/${docId}/edit" target="_blank" class="text-[#50b1f7] hover:underline">Open Document</a>`;
-        statusEl.style.color = '#10b981';
-    } catch (err) {
-        const errorMsg = err?.result?.error?.message || err.message;
-        statusEl.textContent = errorMsg.includes('authentication') ?
-            'Authentication expired. Please refresh the page.' :
-            `Error: ${errorMsg}`;
-        statusEl.style.color = '#ef4444';
-        console.error(err);
-    } finally {
-        showLoading(false);
-    }
-}
+            } catch (err) {
+                const errorMsg = err?.result?.error?.message || err.message;
+                statusEl.textContent = errorMsg.includes('authentication') ?
+                    'Authentication expired. Please refresh the page.' :
+                    `Error: ${errorMsg}`;
+                statusEl.style.color = '#ef4444';
+                console.error(err);
+            } finally {
+                showLoading(false);
+            }
+        }
 
         async function enhanceWithAI() {
             const contentEl = document.getElementById('doc-content');
