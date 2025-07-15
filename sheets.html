@@ -275,7 +275,7 @@
                 // First, check user's current usage and plan.
                 let { data: usage, error: usageError } = await supabase
                     .from('user_usage')
-                    .select('sheet_count, is_pro')
+                    .select('document_count, is_pro') // FIX: Changed 'sheet_count' to 'document_count'
                     .eq('user_id', currentUser.id)
                     .maybeSingle();
 
@@ -284,8 +284,8 @@
                 if (!usage) {
                     const { data: newUsage, error: insertError } = await supabase
                         .from('user_usage')
-                        .insert({ user_id: currentUser.id, sheet_count: 0, document_count: 0, is_pro: false })
-                        .select('sheet_count, is_pro')
+                        .insert({ user_id: currentUser.id, document_count: 0, is_pro: false }) // FIX: Removed sheet_count
+                        .select('document_count, is_pro') // FIX: Changed 'sheet_count' to 'document_count'
                         .single();
 
                     if (insertError) {
@@ -295,11 +295,11 @@
                     usage = newUsage;
                 }
 
-                const sheetCount = usage.sheet_count || 0;
+                const docCount = usage.document_count || 0; // FIX: Changed to use document_count
                 
-                const MAX_FREE_SHEETS = 15;
-                if (!usage.is_pro && sheetCount >= MAX_FREE_SHEETS) {
-                     statusEl.innerHTML = `You've reached the free limit of ${MAX_FREE_SHEETS} sheets. <a href="./index.html" class="text-[#50b1f7] hover:underline">Upgrade to Pro</a> for unlimited creation.`;
+                const MAX_FREE_DOCS = 20; // Using a single limit for all docs
+                if (!usage.is_pro && docCount >= MAX_FREE_DOCS) {
+                     statusEl.innerHTML = `You've reached the free limit of ${MAX_FREE_DOCS} documents. <a href="./index.html" class="text-[#50b1f7] hover:underline">Upgrade to Pro</a> for unlimited creation.`;
                      statusEl.style.color = '#f59e0b';
                      showLoading(false);
                      return;
@@ -313,7 +313,8 @@
                 });
                 const sheetId = response.result.spreadsheetId;
 
-                const { error: rpcError } = await supabase.rpc('increment_sheet_count', {
+                // FIX: Changed RPC to increment the correct counter
+                const { error: rpcError } = await supabase.rpc('increment_doc_count', {
                     p_user_id: currentUser.id
                 });
                 
