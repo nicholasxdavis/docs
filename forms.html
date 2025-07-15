@@ -334,7 +334,6 @@
                 }
 
                 statusEl.textContent = 'Creating form...';
-                // FIX: Create form with only the title
                 const form = {
                     info: { title }
                 };
@@ -349,10 +348,7 @@
                     console.error('Critical: Google Form was created but usage count failed to update:', rpcError.message);
                 }
 
-                // Prepare batch update requests
                 let requests = [];
-
-                // FIX: Add description update to batch requests
                 if (description) {
                     requests.push({
                         updateFormInfo: {
@@ -362,23 +358,34 @@
                     });
                 }
 
-                const questionRequests = questions.map((q, index) => ({
-                    createItem: {
-                        item: {
-                            title: q.title,
-                            questionItem: {
-                                question: {
-                                    required: q.required || false,
-                                    choiceQuestion: {
-                                        type: q.type || 'TEXT',
-                                        options: q.options?.map(opt => ({ value: opt })) || []
-                                    }
-                                }
-                            }
+                const questionRequests = questions.map((q, index) => {
+                    const questionItem = {
+                        title: q.title,
+                        question: {
+                            required: q.required || false,
                         },
-                        location: { index }
+                    };
+
+                    // FIX: Differentiate question types
+                    if (q.type === 'TEXT') {
+                        questionItem.question.textQuestion = {}; // Empty object is sufficient
+                    } else {
+                        questionItem.question.choiceQuestion = {
+                            type: q.type || 'MULTIPLE_CHOICE', // Default to multiple choice if not specified
+                            options: q.options?.map(opt => ({ value: opt })) || [],
+                        };
                     }
-                }));
+
+                    return {
+                        createItem: {
+                            item: {
+                                title: q.title,
+                                questionItem: questionItem
+                            },
+                            location: { index }
+                        }
+                    };
+                });
 
                 requests = requests.concat(questionRequests);
 
