@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- FIX: Added Content-Security-Policy to allow required Google scripts -->
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdn.jsdelivr.net/npm/ https://apis.google.com https://accounts.google.com https://www.gstatic.com; object-src 'self'">
     <title>Orbit - Email Dashboard</title>
     
@@ -137,11 +136,6 @@
                         </button>
                     </div>
                     <p id="generator-status" class="mt-4 text-center h-5 text-sm"></p>
-                    <div id="reconnect-google" class="hidden mt-4 text-center">
-                        <button id="reconnectGoogleBtn" class="text-[#06b2fc] hover:underline">
-                            Reconnect Google Account
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -155,6 +149,9 @@
                 <h1 class="text-2xl font-bold">Email Dashboard</h1>
             </div>
             <div class="flex items-center gap-4">
+                 <a href="./index.html" class="bg-dark-secondary text-dark-light font-medium py-2 px-4 rounded-lg hover:bg-dark-light/10 transition-all flex items-center gap-2 btn-micro">
+                    &larr; Back to Workspace
+                </a>
                 <button id="open-compose" class="bg-gradient-to-r from-[#06b2fc] to-[#50b1f7] text-white font-medium py-2 px-4 rounded-lg hover:opacity-90 transition-all flex items-center gap-2 btn-micro">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd"></path></svg>
                     <span>Compose</span>
@@ -297,6 +294,14 @@
                 </div>
             </div>
         </div>
+        
+        <div id="auth-prompt" class="hidden text-center p-10 mt-16">
+             <h2 class="text-2xl font-bold mb-4">Authentication Required</h2>
+             <p class="mb-6 text-dark-tertiary">Please sign in and connect your Google Account from the main workspace to use this tool.</p>
+             <a href="./index.html" class="bg-[#06b2fc] text-white font-semibold py-3 px-6 rounded-lg hover:bg-[#0595d8] transition-all">
+                Go to Workspace
+            </a>
+        </div>
     </div>
 
     <div id="loading-skeleton" class="fixed inset-0 bg-dark-primary/90 z-[2000] flex items-center justify-center">
@@ -311,18 +316,11 @@
     const SUPABASE_URL = 'https://zxeikhguvghtsqouyuyz.supabase.co';
     const SUPABASE_ANON_KEY = deobfuscate('e*y*J*h*b*G*c*i*O*i*J*I*U*z*I*1*N*i*I*s*I*n*R*5*c*C*I*6*I*k*p*X*V*C*J*9*.*e*y*J*p*c*3*M*i*O*i*J*z*d*X*B*h*Y*m*F*z*Z*S*I*s*I*n*J*l*Z*i*I*6*I*n*p*4*Z*W*l*r*a*G*d*1*d*m*d*o*d*H*N*x*b*3*V*5*d*X*l*6*I*i*w*i*c*m*9*s*Z*S*I*6*I*m*F*u*b*2*4*i*L*C*J*p*Y*X*Q*i*O*j*E*3*N*T*E*1*O*D*Y*y*M*z*A*s*I*m*V*4*c*C*I*6*M*j*A*2*N*z*E*2*M*j*I*z*M*H*0*.*a*9*j*W*r*_*h*1*d*g*y*i*_*S*T*7*s*g*K*D*A*S*D*H*i*7*h*k*M*j*S*W*O*R*7*8*V*q*2*f*M*N*0');
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        global: {
-            headers: {
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-            }
-        }
-    });
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const GOOGLE_API_KEY = deobfuscate('A*I*z*a*S*y*A*U*I*v*4*H*E*M*u*f*F*0*x*5*1*e*Z*q*L*p*e*o*R*t*J*X*8*W*n*r*n*i*o');
-    const DISCOVERY_DOC = 'https://gmail.googleapis.com/$discovery/rest?version=v1';
-    const GMAIL_SCOPES = 'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.send';
+    // Using the discovery doc from your working file
+    const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest';
 
     const OPENROUTER_API_KEY = deobfuscate('s*k*-*o*r*-*v*1*-*b*2*1*9*8*5*d*9*f*5*7*4*2*0*1*8*b*8*d*8*e*9*d*8*e*3*6*f*f*f*9*c*1*5*b*8*3*1*6*2*1*8*8*9*1*c*a*5*e*3*2*6*a*3*a*2*f*d*5*4*b*a*4*7');
     const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
@@ -338,9 +336,9 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
         const appContent = document.getElementById('app-content');
+        const authPrompt = document.getElementById('auth-prompt');
         const loadingSkeleton = document.getElementById('loading-skeleton');
         
-        // Compose email elements
         const composeOverlay = document.getElementById('compose-overlay');
         const openComposeBtn = document.getElementById('open-compose');
         const closeComposeBtn = document.getElementById('close-compose');
@@ -349,28 +347,7 @@
             loadingSkeleton.classList.toggle('hidden', !show);
         };
 
-        const redirectToDashboard = (message) => {
-            // Using a custom modal or a less intrusive notification is better than alert()
-            // For this example, we'll keep alert but recommend changing it.
-            console.error("Redirecting:", message);
-            alert(message);
-            window.location.href = './index.html';
-        };
-
-        async function validateGoogleToken(accessToken) {
-            try {
-                const response = await fetch(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}`);
-                if (!response.ok) return false;
-                
-                const data = await response.json();
-                return !data.error && 
-                       data.expires_in > 0 && 
-                       data.scope.includes('https://www.googleapis.com/auth/gmail.readonly');
-            } catch {
-                return false;
-            }
-        }
-
+        // This function is modeled after your working email.html file
         async function getGoogleToken(userId) {
             try {
                 const { data, error } = await supabase
@@ -385,6 +362,7 @@
                 const now = new Date();
                 const expiresAt = new Date(data.expires_at);
                 if (expiresAt <= now) {
+                    // Token is expired, let the user re-auth on index.html
                     await supabase
                         .from('user_google_tokens')
                         .delete()
@@ -392,123 +370,61 @@
                     return null;
                 }
                 
-                return data;
+                return data.access_token;
             } catch (error) {
                 console.error('Supabase query error:', error);
                 return null;
             }
         }
-
+        
+        // FIX: Replaced the entire initializeApp function with one that uses the correct auth flow.
         async function initializeApp() {
             showLoading(true);
             try {
                 const { data: { session }, error: sessionError } = await supabase.auth.getSession();
                 if (sessionError || !session) {
-                    throw new Error('No active session. Please login first.');
+                    throw new Error('No active session. Please sign in via the main workspace.');
                 }
                 
                 currentUser = session.user;
 
-                await new Promise((resolve) => gapi.load('client:auth2', resolve));
-                
-                // IMPORTANT: Replace with your actual client ID from Google Cloud Console.
-                // You must also add the origin where this file is hosted (e.g., https://nicholasxdavis.github.io)
-                // to the "Authorized JavaScript origins" in your Google Cloud OAuth 2.0 Client ID settings.
+                const googleToken = await getGoogleToken(currentUser.id);
+                if (!googleToken) {
+                     throw new Error('No valid Google token found. Please reconnect your Google account in the main workspace.');
+                }
+
+                await new Promise((resolve) => gapi.load('client', resolve));
                 await gapi.client.init({
                     apiKey: GOOGLE_API_KEY,
                     discoveryDocs: [DISCOVERY_DOC],
-                    scope: GMAIL_SCOPES,
-                    clientId: 'YOUR_CLIENT_ID.apps.googleusercontent.com' 
                 });
 
-                // Check if user is signed in
-                if (!gapi.auth2.getAuthInstance().isSignedIn.get()) {
-                    await gapi.auth2.getAuthInstance().signIn();
-                }
-
-                // Get the current user
-                const googleUser = gapi.auth2.getAuthInstance().currentUser.get();
-                const authResponse = googleUser.getAuthResponse();
-                
-                // Verify the token has the required scopes
-                if (!authResponse.scope.includes(GMAIL_SCOPES)) {
-                    throw new Error('Missing required Gmail permissions');
-                }
-
-                gapi.client.setToken(authResponse);
-
-                // Store the token in Supabase
-                const { error } = await supabase
-                    .from('user_google_tokens')
-                    .upsert({
-                        user_id: currentUser.id,
-                        access_token: authResponse.access_token,
-                        expires_at: new Date(Date.now() + authResponse.expires_in * 1000).toISOString()
-                    });
-                
-                if (error) throw error;
-
+                gapi.client.setToken({ access_token: googleToken });
                 gmailClient = gapi.client.gmail;
+
                 appContent.classList.remove('hidden');
+                authPrompt.classList.add('hidden');
                 
-                // Load dashboard data
                 await loadDashboardData();
-                
-                // Setup token refresh
-                setupTokenRefresh();
                 
             } catch (error) {
                 console.error('Initialization error:', error);
-                if (error.error === 'access_denied') {
-                    // Handle scope denial
-                    alert('Please grant Gmail permissions to continue');
-                    document.getElementById('reconnect-google').classList.remove('hidden');
-                } else if (error.error === 'idpiframe_initialization_failed') {
-                    alert('Google Sign-In failed. Please ensure you have replaced "YOUR_CLIENT_ID" and authorized your domain in the Google Cloud Console.');
-                }
-                 else {
-                    redirectToDashboard(error.message);
-                }
+                appContent.classList.add('hidden');
+                authPrompt.classList.remove('hidden');
             } finally {
                 showLoading(false);
             }
         }
 
-        function setupTokenRefresh() {
-            setInterval(async () => {
-                try {
-                    const googleUser = gapi.auth2.getAuthInstance().currentUser.get();
-                    const newAuthResponse = await googleUser.reloadAuthResponse();
-                    gapi.client.setToken(newAuthResponse);
-                    
-                    // Update Supabase with new token
-                    await supabase
-                        .from('user_google_tokens')
-                        .upsert({
-                            user_id: currentUser.id,
-                            access_token: newAuthResponse.access_token,
-                            expires_at: new Date(Date.now() + newAuthResponse.expires_in * 1000).toISOString()
-                        });
-                } catch (error) {
-                    console.error('Token refresh failed:', error);
-                }
-            }, 45 * 60 * 1000); // Refresh every 45 minutes
-        }
-
         async function loadDashboardData() {
             showLoading(true);
             try {
-                // Get email stats
                 await getEmailStats();
-                
-                // Get recent emails
                 await getRecentEmails();
-                
-                // Initialize charts
                 initCharts();
-                
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
+                alert('Failed to load dashboard data. Your Google token may have expired. Please return to the workspace to reconnect.');
             } finally {
                 showLoading(false);
             }
@@ -516,52 +432,25 @@
 
         async function getEmailStats() {
             try {
-                // Get messages from the last 24 hours
                 const twentyFourHoursAgo = new Date();
                 twentyFourHoursAgo.setDate(twentyFourHoursAgo.getDate() - 1);
                 const unixTimestamp = Math.floor(twentyFourHoursAgo.getTime() / 1000);
                 
-                // Get inbox messages
-                const inboxResponse = await gmailClient.users.messages.list({
-                    userId: 'me',
-                    q: `after:${unixTimestamp}`,
-                    maxResults: 500
-                });
-                
+                const inboxResponse = await gmailClient.users.messages.list({ userId: 'me', q: `after:${unixTimestamp}`, maxResults: 500 });
                 const inboxMessages = inboxResponse.result.messages || [];
                 
-                // Get sent messages
-                const sentResponse = await gmailClient.users.messages.list({
-                    userId: 'me',
-                    q: `after:${unixTimestamp} in:sent`,
-                    maxResults: 500
-                });
-                
+                const sentResponse = await gmailClient.users.messages.list({ userId: 'me', q: `after:${unixTimestamp} in:sent`, maxResults: 500 });
                 const sentMessages = sentResponse.result.messages || [];
                 
-                // Get unread messages
-                const unreadResponse = await gmailClient.users.messages.list({
-                    userId: 'me',
-                    q: `after:${unixTimestamp} is:unread`,
-                    maxResults: 500
-                });
-                
+                const unreadResponse = await gmailClient.users.messages.list({ userId: 'me', q: `is:unread`, maxResults: 500 });
                 const unreadMessages = unreadResponse.result.messages || [];
                 
-                // Update stats display
                 document.getElementById('received-count').textContent = inboxMessages.length;
                 document.getElementById('sent-count').textContent = sentMessages.length;
                 document.getElementById('unread-count').textContent = unreadMessages.length;
                 
-                // Get top sender (simplified - would need more processing in a real app)
                 if (inboxMessages.length > 0) {
-                    const firstMessage = await gmailClient.users.messages.get({
-                        userId: 'me',
-                        id: inboxMessages[0].id,
-                        format: 'metadata',
-                        metadataHeaders: ['From']
-                    });
-                    
+                    const firstMessage = await gmailClient.users.messages.get({ userId: 'me', id: inboxMessages[0].id, format: 'metadata', metadataHeaders: ['From'] });
                     const fromHeader = firstMessage.result.payload.headers.find(h => h.name === 'From');
                     if (fromHeader) {
                         const sender = fromHeader.value.split('<')[0].trim();
@@ -569,80 +458,58 @@
                     }
                 }
                 
-                // Store recent emails for analysis
-                recentEmails = inboxMessages.slice(0, 50); // Limit to 50 for analysis
-                
-                 // Pre-fetch email contents for analysis
-            await fetchEmailContents(recentEmails);
-            
-        } catch (error) {
-            console.error('Error getting email stats:', error);
-            if (error.status === 403) {
-                document.getElementById('reconnect-google').classList.remove('hidden');
+                recentEmails = inboxMessages.slice(0, 50);
+                await fetchEmailContents(recentEmails);
+            } catch (error) {
+                console.error('Error getting email stats:', error);
             }
         }
-    }
 
-    async function fetchEmailContents(messages) {
-        try {
-            // Clear previous contents
+        async function fetchEmailContents(messages) {
             emailContents = {};
-            
-            // Fetch contents for each message
-            for (const message of messages) {
-                const response = await gmailClient.users.messages.get({
-                    userId: 'me',
-                    id: message.id,
-                    format: 'full'
-                });
-                
-                if (response.result) {
-                    emailContents[message.id] = {
+            const promises = messages.map(message => 
+                gmailClient.users.messages.get({ userId: 'me', id: message.id, format: 'full' })
+            );
+            const responses = await Promise.all(promises);
+
+            responses.forEach((response, index) => {
+                 if (response.result) {
+                    emailContents[messages[index].id] = {
                         subject: getHeader(response.result.payload.headers, 'Subject'),
                         from: getHeader(response.result.payload.headers, 'From'),
                         date: getHeader(response.result.payload.headers, 'Date'),
                         body: extractEmailBody(response.result.payload)
                     };
                 }
+            });
+        }
+
+        function getHeader(headers, name) {
+            const header = headers.find(h => h.name.toLowerCase() === name.toLowerCase());
+            return header ? header.value : '';
+        }
+
+        function extractEmailBody(payload) {
+            if (payload.parts) {
+                const textPart = payload.parts.find(part => part.mimeType === 'text/plain');
+                if (textPart && textPart.body && textPart.body.data) {
+                    return decodeBase64(textPart.body.data);
+                }
             }
-        } catch (error) {
-            console.error('Error fetching email contents:', error);
+            return payload.body && payload.body.data ? decodeBase64(payload.body.data) : '';
         }
-    }
 
-    function getHeader(headers, name) {
-        const header = headers.find(h => h.name === name);
-        return header ? header.value : '';
-    }
-
-    function extractEmailBody(payload) {
-        if (payload.parts) {
-            // Find the plain text part
-            const textPart = payload.parts.find(part => 
-                part.mimeType === 'text/plain'
-            );
-            
-            if (textPart && textPart.body && textPart.body.data) {
-                return decodeBase64(textPart.body.data);
+        function decodeBase64(data) {
+            if (!data) return '';
+            try {
+                return atob(data.replace(/-/g, '+').replace(/_/g, '/'));
+            } catch (e) {
+                console.error('Base64 decode error:', e);
+                return '';
             }
         }
-        
-        // Fallback to simple body
-        return payload.body && payload.body.data ? decodeBase64(payload.body.data) : '';
-    }
 
-    function decodeBase64(data) {
-        if (!data) return '';
-        try {
-            return atob(data.replace(/-/g, '+').replace(/_/g, '/'));
-        } catch (e) {
-            console.error('Base64 decode error:', e);
-            return ''; // Return empty string if decoding fails
-        }
-    }
-
-    async function getRecentEmails(filter = 'all') {
-        try {
+        async function getRecentEmails(filter = 'all') {
             const emailList = document.getElementById('email-list');
             emailList.innerHTML = '<div class="text-center py-12 text-dark-tertiary"><p>Loading emails...</p></div>';
             
@@ -650,53 +517,28 @@
             if (filter === 'unread') query = 'is:unread';
             if (filter === 'important') query = 'is:important';
             
-            const response = await gmailClient.users.messages.list({
-                userId: 'me',
-                q: query,
-                maxResults: 10
-            });
-            
+            const response = await gmailClient.users.messages.list({ userId: 'me', q: query, maxResults: 10 });
             const messages = response.result.messages || [];
+            
             if (messages.length === 0) {
                 emailList.innerHTML = '<div class="text-center py-12 text-dark-tertiary"><p>No emails found</p></div>';
                 return;
             }
             
-            // Get full message details for each
             const messageDetails = await Promise.all(
-                messages.map(msg => 
-                    gmailClient.users.messages.get({
-                        userId: 'me',
-                        id: msg.id,
-                        format: 'metadata',
-                        metadataHeaders: ['From', 'Subject', 'Date']
-                    })
-                )
+                messages.map(msg => gmailClient.users.messages.get({ userId: 'me', id: msg.id, format: 'metadata', metadataHeaders: ['From', 'Subject', 'Date'] }))
             );
             
-            // Render emails
             emailList.innerHTML = '';
-            messageDetails.forEach((msg, index) => {
+            messageDetails.forEach(msg => {
                 const message = msg.result;
                 const headers = message.payload.headers;
+                const from = getHeader(headers, 'From');
+                const subject = getHeader(headers, 'Subject') || '(No Subject)';
+                const date = new Date(getHeader(headers, 'Date')).toLocaleString();
+                let senderName = from.includes('<') ? from.split('<')[0].trim() : from;
                 
-                const fromHeader = headers.find(h => h.name === 'From');
-                const subjectHeader = headers.find(h => h.name === 'Subject');
-                const dateHeader = headers.find(h => h.name === 'Date');
-                
-                const from = fromHeader ? fromHeader.value : 'Unknown';
-                const subject = subjectHeader ? subjectHeader.value : '(No Subject)';
-                const date = dateHeader ? new Date(dateHeader.value).toLocaleString() : '';
-                
-                // Simplified sender name extraction
-                let senderName = from;
-                if (from.includes('<')) {
-                    senderName = from.split('<')[0].trim();
-                } else if (from.includes('@')) {
-                    senderName = from.split('@')[0];
-                }
-                
-                const isUnread = message.labelIds && !message.labelIds.includes('UNREAD');
+                const isUnread = message.labelIds && message.labelIds.includes('UNREAD');
                 const isImportant = message.labelIds && message.labelIds.includes('IMPORTANT');
                 
                 const emailCard = document.createElement('div');
@@ -712,386 +554,213 @@
                         ${isUnread ? '<span class="category-tag bg-[#06b2fc]/20 text-[#06b2fc]">Unread</span>' : ''}
                     </div>
                 `;
-                
-                emailCard.addEventListener('click', () => {
-                    window.open(`https://mail.google.com/mail/u/0/#inbox/${message.id}`, '_blank');
-                });
-                
+                emailCard.addEventListener('click', () => window.open(`https://mail.google.com/mail/u/0/#inbox/${message.id}`, '_blank'));
                 emailList.appendChild(emailCard);
             });
-            
-        } catch (error) {
-            console.error('Error getting recent emails:', error);
-            document.getElementById('email-list').innerHTML = '<div class="text-center py-12 text-dark-tertiary"><p>Error loading emails</p></div>';
-            if (error.status === 403) {
-                document.getElementById('reconnect-google').classList.remove('hidden');
-            }
         }
-    }
 
-    function initCharts() {
-        // Sample data - in a real app you would process the actual email data
-        const ctx1 = document.getElementById('volumeChart').getContext('2d');
-        volumeChart = new Chart(ctx1, {
-            type: 'line',
-            data: {
-                labels: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm'],
-                datasets: [
-                    {
-                        label: 'Received',
-                        data: [5, 3, 7, 12, 18, 15, 10, 8],
-                        borderColor: '#06b2fc',
-                        backgroundColor: 'rgba(6, 178, 252, 0.1)',
-                        tension: 0.3,
-                        fill: true
-                    },
-                    {
-                        label: 'Sent',
-                        data: [2, 1, 3, 5, 8, 6, 4, 3],
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        tension: 0.3,
-                        fill: true
-                    }
-                ]
-            },
-            options: {
+        function initCharts() {
+            const commonOptions = {
                 responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: {
-                            color: '#fcfcfc'
-                        }
-                    }
+                plugins: { legend: { labels: { color: '#fcfcfc' } } },
+                scales: { 
+                    x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#a1a1a2' } },
+                    y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#a1a1a2' } }
+                }
+            };
+
+            const ctx1 = document.getElementById('volumeChart').getContext('2d');
+            volumeChart = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm'],
+                    datasets: [
+                        { label: 'Received', data: [5, 3, 7, 12, 18, 15, 10, 8], borderColor: '#06b2fc', backgroundColor: 'rgba(6, 178, 252, 0.1)', tension: 0.3, fill: true },
+                        { label: 'Sent', data: [2, 1, 3, 5, 8, 6, 4, 3], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.3, fill: true }
+                    ]
                 },
-                scales: {
-                    x: {
-                        grid: {
-                            color: 'rgba(255, 255, 255, 0.05)'
-                        },
-                        ticks: {
-                            color: '#a1a1a2'
-                        }
-                    },
-                    y: {
-                        grid: {
-                            color: 'rgba(255, 255, 255, 0.05)'
-                        },
-                        ticks: {
-                            color: '#a1a1a2'
-                        }
-                    }
-                }
-            }
-        });
-        
-        const ctx2 = document.getElementById('categoryChart').getContext('2d');
-        categoryChart = new Chart(ctx2, {
-            type: 'doughnut',
-            data: {
-                labels: ['Work', 'Personal', 'Promotions', 'Updates', 'Social'],
-                datasets: [{
-                    data: [35, 25, 20, 12, 8],
-                    backgroundColor: [
-                        '#06b2fc',
-                        '#8b5cf6',
-                        '#10b981',
-                        '#f59e0b',
-                        '#ef4444'
-                    ],
-                    borderColor: '#242628',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                        labels: {
-                            color: '#fcfcfc'
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    async function analyzeEmails(mode) {
-        const analyzerPlaceholder = document.getElementById('analyzer-placeholder');
-        const analyzerResults = document.getElementById('analyzer-results');
-        const analyzerLoading = document.getElementById('analyzer-loading');
-        const analysisTitle = document.getElementById('analysis-title');
-        const analysisContent = document.getElementById('analysis-content');
-        
-        analyzerPlaceholder.classList.add('hidden');
-        analyzerResults.classList.add('hidden');
-        analyzerLoading.classList.remove('hidden');
-        
-        const days = parseInt(document.getElementById('analyze-period').value);
-        const dayText = days === 1 ? '24 hours' : `${days} days`;
-        
-        try {
-            // Prepare email samples for analysis
-            const emailSamples = Object.values(emailContents)
-                .slice(0, 10) // Limit to 10 emails for analysis
-                .map(email => `From: ${email.from}\nSubject: ${email.subject}\n\n${email.body.substring(0, 500)}...`)
-                .join('\n\n---\n\n');
+                options: commonOptions
+            });
             
-            let prompt = '';
-            let title = '';
-            
-            // FIX: Corrected the switch statement structure.
-            switch(mode) {
-                case 'summary':
-                    title = `Summary of Last ${dayText}`;
-                    prompt = `Analyze these emails from the last ${dayText} and provide a concise summary. Focus on:\n- Key topics and themes\n- Important senders\n- Urgent matters\n- Overall sentiment\n\nFormat as bullet points with clear headings. Here are sample emails:\n\n${emailSamples}`;
-                    break;
-                case 'trends':
-                    title = `Trends in Last ${dayText}`;
-                    prompt = `Identify trends and patterns in these emails from the last ${dayText}. Look for:\n- Frequency of communication\n- Common topics\n- Time patterns\n- Relationship dynamics\n\nProvide actionable insights. Here are sample emails:\n\n${emailSamples}`;
-                    break;
-                case 'actions':
-                    title = `Action Items from Last ${dayText}`;
-                    prompt = `Extract clear action items from these emails from the last ${dayText}. Include:\n- Specific tasks\n- Deadlines\n- Required follow-ups\n- Priority level\n\nFormat as a numbered list. Here are sample emails:\n\n${emailSamples}`;
-                    break;
-            }
-
-            const response = await fetch(OPENROUTER_API_URL, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-                    'Content-Type': 'application/json',
-                    'HTTP-Referer': window.location.href,
-                    'X-Title': 'Orbit Email Tool'
+            const ctx2 = document.getElementById('categoryChart').getContext('2d');
+            categoryChart = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Work', 'Personal', 'Promotions', 'Updates', 'Social'],
+                    datasets: [{ data: [35, 25, 20, 12, 8], backgroundColor: ['#06b2fc', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'], borderColor: '#242628', borderWidth: 2 }]
                 },
-                body: JSON.stringify({
-                    model: DEFAULT_MODEL,
-                    messages: [{ role: "user", content: prompt }]
-                })
+                options: { responsive: true, plugins: { legend: { position: 'right', labels: { color: '#fcfcfc' } } } }
             });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error?.message || `API call failed: ${response.status}`);
-            }
-
-            const result = await response.json();
-            const analysisText = result.choices?.[0]?.message?.content;
-
-            if (!analysisText) throw new Error('No content returned from AI.');
-
-            analysisTitle.textContent = title;
-            analysisContent.innerHTML = analysisText.replace(/\n/g, '<br>');
-            
-            analyzerLoading.classList.add('hidden');
-            analyzerResults.classList.remove('hidden');
-            
-        } catch (error) {
-            console.error('Analysis error:', error);
-            analyzerLoading.classList.add('hidden');
-            analyzerPlaceholder.classList.remove('hidden');
-            alert(`Analysis failed: ${error.message}`);
-        }
-    }
-
-    // Compose Email Functions
-    async function sendEmail() {
-        const to = document.getElementById('email-to').value.trim();
-        const subject = document.getElementById('email-subject').value.trim();
-        const content = document.getElementById('email-content').value.trim();
-        const statusEl = document.getElementById('generator-status');
-
-        if (!to || !subject || !content) {
-            statusEl.textContent = 'Please provide recipient, subject, and content.';
-            statusEl.style.color = '#ef4444';
-            return;
         }
 
-        if (!currentUser) {
-            redirectToDashboard('Authentication error. Please sign in again.');
-            return;
-        }
-        
-        statusEl.textContent = 'Sending email...';
-        statusEl.style.color = '#06b2fc';
-        showLoading(true);
-
-        try {
-            // Create the email message
-            const emailLines = [
-                `To: ${to}`,
-                'Content-Type: text/html; charset=utf-8',
-                'MIME-Version: 1.0',
-                `Subject: ${subject}`,
-                '',
-                content.replace(/\n/g, '<br>')
-            ];
+        async function analyzeEmails(mode) {
+            const analyzerPlaceholder = document.getElementById('analyzer-placeholder');
+            const analyzerResults = document.getElementById('analyzer-results');
+            const analyzerLoading = document.getElementById('analyzer-loading');
+            const analysisTitle = document.getElementById('analysis-title');
+            const analysisContent = document.getElementById('analysis-content');
             
-            const email = emailLines.join('\n');
-            const base64EncodedEmail = btoa(email).replace(/\+/g, '-').replace(/\//g, '_');
-
-            // Send the email
-            const response = await gmailClient.users.messages.send({
-                userId: 'me',
-                resource: {
-                    raw: base64EncodedEmail
+            analyzerPlaceholder.classList.add('hidden');
+            analyzerResults.classList.add('hidden');
+            analyzerLoading.classList.remove('hidden');
+            
+            const days = parseInt(document.getElementById('analyze-period').value);
+            const dayText = days === 1 ? '24 hours' : `${days} days`;
+            
+            try {
+                const emailSamples = Object.values(emailContents)
+                    .slice(0, 10)
+                    .map(email => `From: ${email.from}\nSubject: ${email.subject}\n\n${email.body.substring(0, 500)}...`)
+                    .join('\n\n---\n\n');
+                
+                let prompt = '';
+                let title = '';
+                
+                switch(mode) {
+                    case 'summary':
+                        title = `Summary of Last ${dayText}`;
+                        prompt = `Analyze these emails from the last ${dayText} and provide a concise summary. Focus on:\n- Key topics and themes\n- Important senders\n- Urgent matters\n- Overall sentiment\n\nFormat as bullet points. Sample emails:\n\n${emailSamples}`;
+                        break;
+                    case 'trends':
+                        title = `Trends in Last ${dayText}`;
+                        prompt = `Identify trends in these emails from the last ${dayText}. Look for:\n- Common topics\n- Time patterns\n\nProvide actionable insights. Sample emails:\n\n${emailSamples}`;
+                        break;
+                    case 'actions':
+                        title = `Action Items from Last ${dayText}`;
+                        prompt = `Extract clear action items from these emails from the last ${dayText}. Include:\n- Specific tasks\n- Deadlines\n- Required follow-ups\n\nFormat as a numbered list. Sample emails:\n\n${emailSamples}`;
+                        break;
                 }
-            });
 
-            // Increment the email count in Supabase
-            const { error: rpcError } = await supabase.rpc('increment_email_count', {
-                p_user_id: currentUser.id
-            });
+                const response = await fetch(OPENROUTER_API_URL, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${OPENROUTER_API_KEY}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model: DEFAULT_MODEL, messages: [{ role: "user", content: prompt }] })
+                });
+
+                if (!response.ok) throw new Error(`API call failed: ${response.status}`);
+                const result = await response.json();
+                const analysisText = result.choices?.[0]?.message?.content;
+                if (!analysisText) throw new Error('No content returned from AI.');
+
+                analysisTitle.textContent = title;
+                analysisContent.innerHTML = analysisText.replace(/\n/g, '<br>');
+                analyzerLoading.classList.add('hidden');
+                analyzerResults.classList.remove('hidden');
+            } catch (error) {
+                console.error('Analysis error:', error);
+                analyzerLoading.classList.add('hidden');
+                analyzerPlaceholder.classList.remove('hidden');
+                alert(`Analysis failed: ${error.message}`);
+            }
+        }
+
+        async function sendEmail() {
+            const to = document.getElementById('email-to').value.trim();
+            const subject = document.getElementById('email-subject').value.trim();
+            const content = document.getElementById('email-content').value.trim();
+            const statusEl = document.getElementById('generator-status');
+
+            if (!to || !subject || !content) {
+                statusEl.textContent = 'Please provide recipient, subject, and content.';
+                statusEl.style.color = '#ef4444';
+                return;
+            }
             
-            if (rpcError) {
-                console.error('Critical: Email was sent but usage count failed to update:', rpcError.message);
+            statusEl.textContent = 'Sending email...';
+            statusEl.style.color = '#06b2fc';
+            showLoading(true);
+
+            try {
+                const emailLines = [ `To: ${to}`, 'Content-Type: text/html; charset=utf-8', 'MIME-Version: 1.0', `Subject: ${subject}`, '', content.replace(/\n/g, '<br>') ];
+                const email = emailLines.join('\n');
+                const base64EncodedEmail = btoa(email).replace(/\+/g, '-').replace(/\//g, '_');
+
+                await gmailClient.users.messages.send({ userId: 'me', resource: { raw: base64EncodedEmail } });
+
+                statusEl.textContent = 'Email sent successfully!';
+                statusEl.style.color = '#10b981';
+                
+                setTimeout(() => {
+                    composeOverlay.classList.add('hidden');
+                    document.getElementById('email-to').value = '';
+                    document.getElementById('email-subject').value = '';
+                    document.getElementById('email-content').value = '';
+                    statusEl.textContent = '';
+                }, 2000);
+
+            } catch (err) {
+                const errorMsg = err?.result?.error?.message || err.message;
+                statusEl.textContent = `Error: ${errorMsg}`;
+                statusEl.style.color = '#ef4444';
+                console.error(err);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function enhanceWithAI() {
+            const contentEl = document.getElementById('email-content');
+            const originalContent = contentEl.value.trim();
+            const subject = document.getElementById('email-subject').value.trim();
+            const statusEl = document.getElementById('generator-status');
+
+            if (!originalContent) {
+                statusEl.textContent = 'Please enter some content to enhance.';
+                statusEl.style.color = '#ef4444';
+                return;
             }
 
-            statusEl.textContent = 'Email sent successfully!';
-            statusEl.style.color = '#10b981';
-            
-            // Close compose after 2 seconds
-            setTimeout(() => {
-                composeOverlay.classList.add('hidden');
-                document.getElementById('email-to').value = '';
-                document.getElementById('email-subject').value = '';
-                document.getElementById('email-content').value = '';
-                statusEl.textContent = '';
-            }, 2000);
+            const shouldFormat = document.getElementById('ai-format-toggle').checked;
+            const prompt = `You are a professional email assistant. Based on the following, write a professional email. Subject: "${subject}". Content: "${originalContent}". Return only the enhanced email body.`;
 
-        } catch (err) {
-            const errorMsg = err?.result?.error?.message || err.message;
-            statusEl.textContent = errorMsg.includes('authentication') ?
-                'Authentication expired. Please refresh and sign in again.' :
-                `Error: ${errorMsg}`;
-            statusEl.style.color = '#ef4444';
-            console.error(err);
-        } finally {
-            showLoading(false);
-        }
-    }
+            statusEl.textContent = 'AI is enhancing your email...';
+            statusEl.style.color = '#8b5cf6';
+            showLoading(true);
 
-    async function enhanceWithAI() {
-        const contentEl = document.getElementById('email-content');
-        const originalContent = contentEl.value.trim();
-        const subject = document.getElementById('email-subject').value.trim();
-        const statusEl = document.getElementById('generator-status');
+            try {
+                const response = await fetch(OPENROUTER_API_URL, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${OPENROUTER_API_KEY}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model: DEFAULT_MODEL, messages: [{ role: "user", content: prompt }] })
+                });
 
-        if (!originalContent) {
-            statusEl.textContent = 'Please enter some content to enhance.';
-            statusEl.style.color = '#ef4444';
-            return;
+                if (!response.ok) throw new Error(`API call failed: ${response.status}`);
+                const result = await response.json();
+                const enhancedText = result.choices?.[0]?.message?.content;
+                if (!enhancedText) throw new Error('No content returned from AI.');
+
+                contentEl.value = enhancedText;
+                statusEl.textContent = 'Email enhanced successfully!';
+                statusEl.style.color = '#10b981';
+            } catch (error) {
+                statusEl.textContent = `AI Error: ${error.message}`;
+                statusEl.style.color = '#ef4444';
+            } finally {
+                showLoading(false);
+            }
         }
 
-        const shouldFormat = document.getElementById('ai-format-toggle').checked;
+        // --- Event listeners ---
+        document.getElementById('email-filter').addEventListener('change', (e) => getRecentEmails(e.target.value));
+        document.getElementById('analyze-summary-btn').addEventListener('click', () => analyzeEmails('summary'));
+        document.getElementById('analyze-trends-btn').addEventListener('click', () => analyzeEmails('trends'));
+        document.getElementById('analyze-actions-btn').addEventListener('click', () => analyzeEmails('actions'));
         
-        // FIX: Corrected the ternary operator and prompts.
-        const prompt = shouldFormat
-            ? `You are a professional email assistant. Take the following email content and:
-- Improve clarity and professionalism
-- Ensure proper structure with greeting and closing
-- Make the tone appropriate for business communication
-- Keep it concise.
-Subject: "${subject}".
-Content: "${originalContent}".
-Return only the enhanced email content without any additional commentary.`
-            : `You are a helpful email assistant. Take the following email content and improve it, making it more professional and well-structured.
-Subject: "${subject}".
-Content: "${originalContent}".
-Return only the enhanced email content without any additional commentary.`;
+        document.getElementById('copy-analysis-btn').addEventListener('click', () => {
+            const content = document.getElementById('analysis-content').textContent;
+            navigator.clipboard.writeText(content).then(() => {
+                const btn = document.getElementById('copy-analysis-btn');
+                btn.innerHTML = 'Copied!';
+                setTimeout(() => { btn.innerHTML = 'Copy'; }, 2000);
+            });
+        });
 
-     statusEl.textContent = 'AI is enhancing your email...';
-     statusEl.style.color = '#8b5cf6';
-     showLoading(true);
+        openComposeBtn.addEventListener('click', () => composeOverlay.classList.remove('hidden'));
+        closeComposeBtn.addEventListener('click', () => composeOverlay.classList.add('hidden'));
+        document.getElementById('send-email-btn').addEventListener('click', sendEmail);
+        document.getElementById('ai-enhance-btn').addEventListener('click', enhanceWithAI);
 
-     try {
-         const response = await fetch(OPENROUTER_API_URL, {
-             method: 'POST',
-             headers: {
-                 'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-                 'Content-Type': 'application/json',
-                 'HTTP-Referer': window.location.href,
-                 'X-Title': 'Orbit Email Tool'
-             },
-             body: JSON.stringify({
-                 model: DEFAULT_MODEL,
-                 messages: [{ role: "user", content: prompt }]
-             })
-         });
-
-         if (!response.ok) {
-             const errorData = await response.json();
-             throw new Error(errorData.error?.message || `API call failed: ${response.status}`);
-         }
-
-         const result = await response.json();
-         const enhancedText = result.choices?.[0]?.message?.content;
-
-         if (!enhancedText) throw new Error('No content returned from AI.');
-
-         contentEl.value = enhancedText;
-         statusEl.textContent = 'Email enhanced successfully!';
-         statusEl.style.color = '#10b981';
-     } catch (error) {
-         statusEl.textContent = `AI Error: ${error.message}`;
-         statusEl.style.color = '#ef4444';
-         console.error("OpenRouter API Error:", error);
-     } finally {
-         showLoading(false);
-     }
- }
-
- // Event listeners
- document.getElementById('email-filter').addEventListener('change', (e) => {
-     getRecentEmails(e.target.value);
- });
- 
- document.getElementById('analyze-summary-btn').addEventListener('click', () => {
-     analyzeEmails('summary');
- });
- 
- document.getElementById('analyze-trends-btn').addEventListener('click', () => {
-     analyzeEmails('trends');
- });
- 
- document.getElementById('analyze-actions-btn').addEventListener('click', () => {
-     analyzeEmails('actions');
- });
- 
- document.getElementById('copy-analysis-btn').addEventListener('click', () => {
-     const content = document.getElementById('analysis-content').textContent;
-     navigator.clipboard.writeText(content).then(() => {
-         const btn = document.getElementById('copy-analysis-btn');
-         btn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> Copied!';
-         setTimeout(() => {
-             btn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path></svg> Copy';
-         }, 2000);
-     });
- });
-
- // Compose email event listeners
- openComposeBtn.addEventListener('click', () => {
-     composeOverlay.classList.remove('hidden');
- });
-
- closeComposeBtn.addEventListener('click', () => {
-     composeOverlay.classList.add('hidden');
- });
-
- document.getElementById('send-email-btn').addEventListener('click', sendEmail);
- document.getElementById('ai-enhance-btn').addEventListener('click', enhanceWithAI);
- document.getElementById('reconnectGoogleBtn').addEventListener('click', () => {
-     gapi.auth2.getAuthInstance().signIn({
-         scope: GMAIL_SCOPES
-     }).then(() => {
-         window.location.reload();
-     });
- });
-
- initializeApp();
-});
-
+        initializeApp();
+    });
 </script>
 </body> </html>
