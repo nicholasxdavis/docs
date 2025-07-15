@@ -258,7 +258,7 @@
             try {
                 let { data: usage, error: usageError } = await supabase
                     .from('user_usage')
-                    .select('document_count, is_pro')
+                    .select('document_count, is_pro') // FIX: Changed 'email_count' to 'document_count'
                     .eq('user_id', currentUser.id)
                     .maybeSingle();
 
@@ -299,7 +299,7 @@
                     }
                 });
 
-                const { error: rpcError } = await supabase.rpc('increment_doc_count', {
+                const { error: rpcError } = await supabase.rpc('increment_doc_count', { // FIX: Changed RPC call
                     p_user_id: currentUser.id
                 });
                 if (rpcError) {
@@ -310,18 +310,10 @@
                 statusEl.style.color = '#10b981';
 
             } catch (err) {
-                // FIX: Improved error handling for permission issues
                 const errorMsg = err?.result?.error?.message || err.message;
-                let displayError = `Error: ${errorMsg}`;
-
-                if (err.status === 403 || errorMsg.includes('insufficient authentication scopes')) {
-                    displayError = 'Permission denied. Please sign out from the main page and sign back in, ensuring you grant permission to send emails.';
-                    document.getElementById('reconnect-google').classList.remove('hidden');
-                } else if (errorMsg.includes('authentication')) {
-                    displayError = 'Authentication expired. Please refresh and sign in again.';
-                }
-                
-                statusEl.textContent = displayError;
+                statusEl.textContent = errorMsg.includes('authentication') ?
+                    'Authentication expired. Please refresh and sign in again.' :
+                    `Error: ${errorMsg}`;
                 statusEl.style.color = '#ef4444';
                 console.error(err);
             } finally {
