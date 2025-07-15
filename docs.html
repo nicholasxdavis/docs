@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orbit - Google Docs Tool</title>
+    <title>Orbit - Docs Tool</title>
     
-    <link rel="icon" href="https://raw.githubusercontent.com/alliswells/Project-Orbit/main/img/orbit.png" type="image/png">
+   <link rel="icon" href="https://nicholasxdavis.github.io/docs/img/orbit.png" type="image/png">
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
@@ -61,7 +61,7 @@
     <div class="container mx-auto px-4 md:px-8 py-6">
         <header class="flex justify-between items-center mb-12 animate-fade-up">
             <div class="flex items-center gap-3">
-                 <img src="https://raw.githubusercontent.com/alliswells/Project-Orbit/main/img/logo.png" alt="Orbit Logo" class="w-20 h-100%">
+                          <img src="https://nicholasxdavis.github.io/docs/img/logo.png" alt="Orbit Logo" class="w-20 h-100%">
             </div>
             <a href="./index.html" class="bg-dark-secondary text-dark-light font-medium py-2 px-4 rounded-lg hover:bg-dark-tertiary transition-all flex items-center gap-2 btn-micro">
                 &larr; Back to Dashboard
@@ -122,20 +122,30 @@
 
     // --- CONFIGURATION ---
     const SUPABASE_URL = 'https://zxeikhguvghtsqouyuyz.supabase.co';
-    const SUPABASE_ANON_KEY_OBFUSCATED = 'e*y*J*h*b*G*c*i*O*i*J*I*U*z*I*1*N*i*I*s*I*n*R*5*c*C*I*6*I*k*p*X*V*C*J*9*.*e*y*J*p*c*3*M*i*O*i*J*z*d*X*B*h*Y*m*F*z*Z*S*I*s*I*n*J*l*Z*i*I*6*I*n*p*4*Z*W*l*r*a*G*d*1*d*m*d*o*d*H*N*x*b*3*V*5*d*X*l*6*I*i*w*i*c*m*9*s*Z*S*I*6*I*m*F*u*b*2*4*i*L*C*J*p*Y*X*Q*i*O*j*E*3*N*T*E*1*O*D*Y*y*M*z*A*s*I*m*V*4*c*C*I*6*M*j*A*2*N*z*E*2*M*j*I*z*M*H*0*.*a*9*j*W*r*_*h*1*d*g*y*i*_*S*T*7*s*g*K*D*A*S*D*H*i*7*h*k*M*j*S*W*O*R*7*8*V*q*2*f*M*N*0';
-    const supabase = window.supabase.createClient(SUPABASE_URL, deobfuscate(SUPABASE_ANON_KEY_OBFUSCATED));
-    
-    const GOOGLE_API_KEY_OBFUSCATED = 'A*I*z*a*S*y*A*U*I*v*4*H*E*M*u*f*F*0*x*5*1*e*Z*q*L*p*e*o*R*t*J*X*8*W*n*r*n*i*o';
-    const DISCOVERY_DOC = 'https://docs.googleapis.com/$discovery/rest?version=v1';
-    const OPENROUTER_API_KEY_OBFUSCATED = 's*k*-*o*r*-*v*1*-*b*2*1*9*8*5*d*9*f*5*7*4*2*0*1*8*b*8*d*8*e*9*d*8*e*3*6*f*f*f*9*c*1*5*b*8*3*1*6*2*1*8*8*9*1*c*a*5*e*3*2*6*a*3*a*2*f*d*5*4*b*a*4*7';
-const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const DEFAULT_MODEL = 'moonshotai/kimi-k2:free';
+    const SUPABASE_ANON_KEY = deobfuscate('e*y*J*h*b*G*c*i*O*i*J*I*U*z*I*1*N*i*I*s*I*n*R*5*c*C*I*6*I*k*p*X*V*C*J*9*.*e*y*J*p*c*3*M*i*O*i*J*z*d*X*B*h*Y*m*F*z*Z*S*I*s*I*n*J*l*Z*i*I*6*I*n*p*4*Z*W*l*r*a*G*d*1*d*m*d*o*d*H*N*x*b*3*V*5*d*X*l*6*I*i*w*i*c*m*9*s*Z*S*I*6*I*m*F*u*b*2*4*i*L*C*J*p*Y*X*Q*i*O*j*E*3*N*T*E*1*O*D*Y*y*M*z*A*s*I*m*V*4*c*C*I*6*M*j*A*2*N*z*E*2*M*j*I*z*M*H*0*.*a*9*j*W*r*_*h*1*d*g*y*i*_*S*T*7*s*g*K*D*A*S*D*H*i*7*h*k*M*j*S*W*O*R*7*8*V*q*2*f*M*N*0');
 
-    // --- MAIN APP LOGIC ---
-    document.addEventListener('DOMContentLoaded', () => {
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        global: {
+            headers: {
+                'apikey': SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            }
+        }
+    });
+
+    const GOOGLE_API_KEY = deobfuscate('A*I*z*a*S*y*A*U*I*v*4*H*E*M*u*f*F*0*x*5*1*e*Z*q*L*p*e*o*R*t*J*X*8*W*n*r*n*i*o');
+    const DISCOVERY_DOC = 'https://docs.googleapis.com/$discovery/rest?version=v1';
+
+    const OPENROUTER_API_KEY = deobfuscate('s*k*-*o*r*-*v*1*-*b*2*1*9*8*5*d*9*f*5*7*4*2*0*1*8*b*8*d*8*e*9*d*8*e*3*6*f*f*f*9*c*1*5*b*8*3*1*6*2*1*8*8*9*1*c*a*5*e*3*2*6*a*3*a*2*f*d*5*4*b*a*4*7');
+    const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+    const DEFAULT_MODEL = 'moonshotai/kimi-k2:free';
+
+    document.addEventListener('DOMContentLoaded', async () => {
         const appContent = document.getElementById('app-content');
         const loadingSkeleton = document.getElementById('loading-skeleton');
         const statusEl = document.getElementById('generator-status');
+        const generateDocBtn = document.getElementById('generate-doc-btn');
+        const aiEnhanceBtn = document.getElementById('ai-enhance-btn');
 
         const showLoading = (show) => {
             loadingSkeleton.classList.toggle('hidden', !show);
@@ -146,55 +156,77 @@ const DEFAULT_MODEL = 'moonshotai/kimi-k2:free';
             window.location.href = './index.html';
         };
 
-        async function authGuardAndInit() {
-            showLoading(true);
-            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
-            if (sessionError || !session) {
-                redirectToDashboard('Authentication required. Redirecting to dashboard.');
-                return;
+        async function validateGoogleToken(accessToken) {
+            try {
+                const response = await fetch(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}`);
+                const data = await response.json();
+                return !data.error && data.expires_in > 0;
+            } catch {
+                return false;
             }
-
-            const { data: tokenData, error: tokenError } = await supabase
-                .from('user_google_tokens')
-                .select('access_token, expires_at')
-                .eq('user_id', session.user.id)
-                .single();
-
-            if (tokenError || !tokenData || new Date(tokenData.expires_at) <= new Date()) {
-                if (tokenData) { // Clean up expired token
-                    await supabase.from('user_google_tokens').delete().eq('user_id', session.user.id);
-                }
-                redirectToDashboard('Google account not connected or session expired. Please reconnect from the dashboard.');
-                return;
-            }
-
-            gapi.load('client', async () => {
-                try {
-                    await gapi.client.init({
-                        apiKey: deobfuscate(GOOGLE_API_KEY_OBFUSCATED),
-                        discoveryDocs: [DISCOVERY_DOC],
-                    });
-                    gapi.client.setToken({ access_token: tokenData.access_token });
-                    
-                    appContent.classList.remove('hidden');
-                } catch (err) {
-                     redirectToDashboard(`Failed to initialize Google API: ${err.message}`);
-                } finally {
-                    showLoading(false);
-                }
-            });
         }
 
-        authGuardAndInit();
+       async function getGoogleToken(userId) {
+    try {
+        const { data, error } = await supabase
+            .from('user_google_tokens')
+            .select('access_token, expires_at')
+            .eq('user_id', userId);
+            
+        if (error) throw error;
+        return data?.[0] || null; // Return first item or null
+    } catch (error) {
+        console.error('Supabase query error:', error);
+        throw new Error('Failed to fetch Google token');
+    }
+}
 
-        // Event listeners
-        const generateDocBtn = document.getElementById('generate-doc-btn');
-        const aiEnhanceBtn = document.getElementById('ai-enhance-btn');
+        async function initializeApp() {
+    showLoading(true);
+    try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !session) {
+            throw new Error('No active session');
+        }
 
-        generateDocBtn.addEventListener('click', async () => {
+        const tokenData = await getGoogleToken(session.user.id);
+        if (!tokenData || !tokenData.access_token) {
+            throw new Error('No Google token found');
+        }
+
+        const now = new Date();
+        const expiresAt = new Date(tokenData.expires_at);
+        if (expiresAt <= now) {
+            throw new Error('Google token expired');
+        }
+
+        await new Promise((resolve) => gapi.load('client', resolve));
+        await gapi.client.init({
+            apiKey: GOOGLE_API_KEY,
+            discoveryDocs: [DISCOVERY_DOC],
+        });
+
+        gapi.client.setToken({
+            access_token: tokenData.access_token,
+            token_type: 'Bearer'
+        });
+
+        appContent.classList.remove('hidden');
+
+    } catch (error) {
+        console.error('Initialization error:', error);
+        redirectToDashboard(error.message.includes('session') ?
+            'Please login first' :
+            'Google integration error. Please reconnect your Google account.');
+    } finally {
+        showLoading(false);
+    }
+}
+
+        async function generateDocument() {
             const title = document.getElementById('doc-title').value.trim();
             const content = document.getElementById('doc-content').value.trim();
+
             if (!title || !content) {
                 statusEl.textContent = 'Please provide a title and content.';
                 statusEl.style.color = '#ef4444';
@@ -208,82 +240,99 @@ const DEFAULT_MODEL = 'moonshotai/kimi-k2:free';
             try {
                 const response = await gapi.client.docs.documents.create({ title: title });
                 const docId = response.result.documentId;
-                await gapi.client.docs.documents.batchUpdate({
-                    documentId: docId,
-                    requests: [{ insertText: { text: content, location: { index: 1 } } }],
-                });
-                
-                statusEl.innerHTML = `Document created! <a href="https://docs.google.com/document/d/${docId}/edit" target="_blank" class="text-[#50b1f7] hover:underline">Open Document</a>`;
-                statusEl.style.color = '#10b981';
+
+                try {
+                    await gapi.client.docs.documents.batchUpdate({
+                        documentId: docId,
+                        requests: [{
+                            insertText: {
+                                text: content,
+                                location: { index: 1 }
+                            }
+                        }]
+                    });
+
+                    statusEl.innerHTML = `Document created! <a href="https://docs.google.com/document/d/${docId}/edit" target="_blank" class="text-[#50b1f7] hover:underline">Open Document</a>`;
+                    statusEl.style.color = '#10b981';
+                } catch (updateError) {
+                    statusEl.innerHTML = `Document created but content couldn't be added. <a href="https://docs.google.com/document/d/${docId}/edit" target="_blank" class="text-[#50b1f7] hover:underline">Open Document</a>`;
+                    statusEl.style.color = '#f59e0b';
+                    console.error('Content update failed:', updateError);
+                }
             } catch (err) {
-                statusEl.textContent = `Error: ${err?.result?.error?.message || err.message}`;
+                const errorMsg = err?.result?.error?.message || err.message;
+                statusEl.textContent = errorMsg.includes('authentication') ?
+                    'Authentication expired. Please refresh the page.' :
+                    `Error: ${errorMsg}`;
                 statusEl.style.color = '#ef4444';
                 console.error(err);
             } finally {
                 showLoading(false);
             }
-        });
-        
-        aiEnhanceBtn.addEventListener('click', async () => {
+        }
+
+        async function enhanceWithAI() {
             const contentEl = document.getElementById('doc-content');
             const originalContent = contentEl.value.trim();
+
             if (!originalContent) {
                 statusEl.textContent = 'Please enter some content to enhance.';
                 statusEl.style.color = '#ef4444';
                 return;
             }
+
             const shouldFormat = document.getElementById('ai-format-toggle').checked;
-            const prompt = shouldFormat 
+            const prompt = shouldFormat
                 ? `You are a professional writing assistant. Take the following text and: 1) Expand upon it with relevant details, 2) Improve clarity and flow, 3) Ensure professional tone, 4) Format with proper headings, bullet points, and paragraphs where appropriate. Return only the enhanced text without any additional commentary. Original text: "${originalContent}"`
                 : `You are a helpful writing assistant. Take the following text and expand upon it, making it more detailed, professional, and well-structured. Do not add any introductory or concluding remarks, just provide the enhanced text. Original text: "${originalContent}"`;
 
             statusEl.textContent = 'AI is enhancing your text...';
             statusEl.style.color = '#8b5cf6';
             showLoading(true);
+
             try {
-                const enhancedText = await callOpenRouterApi(prompt);
+                const response = await fetch(OPENROUTER_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+                        'Content-Type': 'application/json',
+                        'HTTP-Referer': window.location.href,
+                        'X-Title': 'Orbit Docs Tool'
+                    },
+                    body: JSON.stringify({
+                        model: DEFAULT_MODEL,
+                        messages: [{ role: "user", content: prompt }]
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || `API call failed: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const enhancedText = result.choices?.[0]?.message?.content;
+
+                if (!enhancedText) throw new Error('No content returned from AI.');
+
                 contentEl.value = enhancedText;
                 statusEl.textContent = 'Text enhanced successfully!';
                 statusEl.style.color = '#10b981';
             } catch (error) {
-                 statusEl.textContent = `AI Error: ${error.message}`;
-                 statusEl.style.color = '#ef4444';
+                statusEl.textContent = `AI Error: ${error.message}`;
+                statusEl.style.color = '#ef4444';
+                console.error("OpenRouter API Error:", error);
             } finally {
                 showLoading(false);
             }
-        });
-
-        const callOpenRouterApi = async (prompt) => {
-    try {
-        const response = await fetch(OPENROUTER_API_URL, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${deobfuscate(OPENROUTER_API_KEY_OBFUSCATED)}`,
-                'Content-Type': 'application/json',
-                'HTTP-Referer': window.location.href,
-                'X-Title': 'Your App Name'
-            },
-            body: JSON.stringify({
-                model: DEFAULT_MODEL,
-                messages: [{ role: "user", content: prompt }]
-            })
-        });
-        
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error?.message || `API call failed: ${response.status}`);
         }
-        
-        const result = await response.json();
-        const content = result.choices?.[0]?.message?.content;
-        if (!content) throw new Error('No content returned from AI.');
-        return content;
-    } catch (error) {
-        console.error("OpenRouter API Error:", error);
-        throw error;
-    }
-};
+
+        initializeApp();
+
+        generateDocBtn.addEventListener('click', generateDocument);
+        aiEnhanceBtn.addEventListener('click', enhanceWithAI);
     });
 </script>
+
 </body>
 </html>
