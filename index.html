@@ -638,6 +638,7 @@ function updateGoogleAuthUI(isAuthorized) {
         icon.classList.toggle('grayscale-0', isAuthorized);
     });
 }
+
     function handleServiceClick(service) {
         if (!authManager.user) {
             authManager.toggleAccountPopup(true);
@@ -651,12 +652,9 @@ function updateGoogleAuthUI(isAuthorized) {
             return;
         }
 
-        if (service === 'docs') {
-            authManager.showLoading(true);
-            window.location.href = './docs.html';
-        } else {
-            alert(`The ${service.charAt(0).toUpperCase() + service.slice(1)} tool is coming soon!`);
-        }
+        // Redirect to the appropriate service page
+        authManager.showLoading(true);
+        window.location.href = `./${service}.html`;
     }
 
     async function saveGoogleToken(tokenResponse) {
