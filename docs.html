@@ -107,6 +107,11 @@
                         </button>
                     </div>
                     <p id="generator-status" class="mt-4 text-center h-5 text-sm"></p>
+                    <div id="reconnect-google" class="hidden mt-4 text-center">
+                        <button id="reconnectGoogleBtn" class="text-[#06b2fc] hover:underline">
+                            Reconnect Google Account
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -146,6 +151,7 @@
         const statusEl = document.getElementById('generator-status');
         const generateDocBtn = document.getElementById('generate-doc-btn');
         const aiEnhanceBtn = document.getElementById('ai-enhance-btn');
+        const reconnectGoogleBtn = document.getElementById('reconnectGoogleBtn');
 
         const showLoading = (show) => {
             loadingSkeleton.classList.toggle('hidden', !show);
@@ -159,6 +165,8 @@
         async function validateGoogleToken(accessToken) {
             try {
                 const response = await fetch(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}`);
+                if (!response.ok) return false;
+                
                 const data = await response.json();
                 return !data.error && data.expires_in > 0;
             } catch {
@@ -175,10 +183,24 @@
                     .single();
 
                 if (error) throw error;
+                if (!data) return null;
+                
+                // Check if token is expired
+                const now = new Date();
+                const expiresAt = new Date(data.expires_at);
+                if (expiresAt <= now) {
+                    // Delete expired token
+                    await supabase
+                        .from('user_google_tokens')
+                        .delete()
+                        .eq('user_id', userId);
+                    return null;
+                }
+                
                 return data;
             } catch (error) {
                 console.error('Supabase query error:', error);
-                throw new Error('Failed to fetch Google token');
+                return null;
             }
         }
 
@@ -187,18 +209,18 @@
             try {
                 const { data: { session }, error: sessionError } = await supabase.auth.getSession();
                 if (sessionError || !session) {
-                    throw new Error('No active session');
+                    throw new Error('No active session. Please login first.');
                 }
 
                 const tokenData = await getGoogleToken(session.user.id);
                 if (!tokenData || !tokenData.access_token) {
-                    throw new Error('No Google token found');
+                    throw new Error('No valid Google token found. Please reconnect your Google account.');
                 }
 
-                const now = new Date();
-                const expiresAt = new Date(tokenData.expires_at);
-                if (expiresAt <= now) {
-                    throw new Error('Google token expired');
+                // Validate the token with Google
+                const isValid = await validateGoogleToken(tokenData.access_token);
+                if (!isValid) {
+                    throw new Error('Google token is invalid. Please reconnect your Google account.');
                 }
 
                 await new Promise((resolve) => gapi.load('client', resolve));
@@ -216,9 +238,13 @@
 
             } catch (error) {
                 console.error('Initialization error:', error);
-                redirectToDashboard(error.message.includes('session') ?
-                    'Please login first' :
-                    'Google integration error. Please reconnect your Google account.');
+                statusEl.textContent = error.message;
+                statusEl.style.color = '#ef4444';
+                if (error.message.includes('Google token')) {
+                    document.getElementById('reconnect-google').classList.remove('hidden');
+                } else {
+                    redirectToDashboard(error.message);
+                }
             } finally {
                 showLoading(false);
             }
@@ -327,6 +353,10 @@
                 showLoading(false);
             }
         }
+
+        reconnectGoogleBtn?.addEventListener('click', () => {
+            window.location.href = './index.html';
+        });
 
         initializeApp();
 

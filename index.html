@@ -304,7 +304,7 @@
     const GOOGLE_API_KEY_OBFUSCATED = 'A*I*z*a*S*y*A*U*I*v*4*H*E*M*u*f*F*0*x*5*1*e*Z*q*L*p*e*o*R*t*J*X*8*W*n*r*n*i*o';
     const GOOGLE_CLIENT_ID_OBFUSCATED = '4*6*7*1*2*2*3*4*7*1*9*5*-*5*g*g*9*e*i*8*a*h*f*l*e*0*t*t*s*e*6*j*s*l*t*2*k*k*h*i*m*l*k*k*1*.*a*p*p*s*.*g*o*o*g*l*e*u*s*e*r*c*o*n*t*e*n*t*.*c*o*m';
     const DISCOVERY_DOC = 'https://docs.googleapis.com/$discovery/rest?version=v1';
-    const SCOPES = 'https://www.googleapis.com/auth/documents';
+    const SCOPES = 'https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/drive.file';
 
     // --- GLOBAL VARIABLES ---
     let tokenClient;
@@ -346,6 +346,7 @@
                 }
                 if (this.user) {
                     await this.loadUsage();
+                    loadGoogleToken();
                 }
                 this.updateUI();
             });
@@ -431,8 +432,57 @@
             if(showLoader) this.showLoading(false);
         }
 
-        async handleUpgrade() { /* Kept from your implementation */ }
-        async loadUsage() { /* Kept from your implementation */ }
+        async handleUpgrade() {
+            if (this.paymentLoading) return;
+            this.paymentLoading = true;
+            
+            try {
+                const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+                    body: JSON.stringify({
+                        user_id: this.user.id,
+                        email: this.user.email
+                    })
+                });
+                
+                if (error) throw error;
+                
+                const result = await stripe.redirectToCheckout({
+                    sessionId: data.sessionId
+                });
+                
+                if (result.error) {
+                    throw result.error;
+                }
+            } catch (error) {
+                console.error('Payment error:', error);
+                alert('Payment failed: ' + error.message);
+            } finally {
+                this.paymentLoading = false;
+            }
+        }
+
+        async loadUsage() {
+            try {
+                const { data, error } = await supabase
+                    .from('user_usage')
+                    .select('document_count, is_pro')
+                    .eq('user_id', this.user.id)
+                    .single();
+                
+                if (error) throw error;
+                
+                this.documentCount = data?.document_count || 0;
+                this.hasActiveSubscription = data?.is_pro || false;
+                this.userPlan = this.hasActiveSubscription ? 'pro' : 'free';
+                
+                // Update usage bar
+                const usagePercentage = this.hasActiveSubscription ? 100 : 
+                    Math.min(100, (this.documentCount / this.maxDocuments) * 100);
+                document.getElementById('usageBar').style.width = `${usagePercentage}%`;
+            } catch (error) {
+                console.error('Error loading usage:', error);
+            }
+        }
 
         updateUI() {
             const isLoggedIn = !!this.user;
