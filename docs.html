@@ -144,6 +144,9 @@
     const OPENROUTER_API_KEY = deobfuscate('s*k*-*o*r*-*v*1*-*b*2*1*9*8*5*d*9*f*5*7*4*2*0*1*8*b*8*d*8*e*9*d*8*e*3*6*f*f*f*9*c*1*5*b*8*3*1*6*2*1*8*8*9*1*c*a*5*e*3*2*6*a*3*a*2*f*d*5*4*b*a*4*7');
     const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
     const DEFAULT_MODEL = 'moonshotai/kimi-k2:free';
+    
+    // Global variable to hold user data
+    let currentUser = null;
 
     document.addEventListener('DOMContentLoaded', async () => {
         const appContent = document.getElementById('app-content');
@@ -185,11 +188,9 @@
                 if (error) throw error;
                 if (!data) return null;
                 
-                // Check if token is expired
                 const now = new Date();
                 const expiresAt = new Date(data.expires_at);
                 if (expiresAt <= now) {
-                    // Delete expired token
                     await supabase
                         .from('user_google_tokens')
                         .delete()
@@ -211,13 +212,14 @@
                 if (sessionError || !session) {
                     throw new Error('No active session. Please login first.');
                 }
+                
+                currentUser = session.user; // <-- Store the user object
 
-                const tokenData = await getGoogleToken(session.user.id);
+                const tokenData = await getGoogleToken(currentUser.id);
                 if (!tokenData || !tokenData.access_token) {
                     throw new Error('No valid Google token found. Please reconnect your Google account.');
                 }
 
-                // Validate the token with Google
                 const isValid = await validateGoogleToken(tokenData.access_token);
                 if (!isValid) {
                     throw new Error('Google token is invalid. Please reconnect your Google account.');
@@ -260,36 +262,69 @@
                 return;
             }
 
-            statusEl.textContent = 'Creating document...';
+            if (!currentUser) {
+                redirectToDashboard('Authentication error. Please sign in again.');
+                return;
+            }
+            
+            statusEl.textContent = 'Checking usage limits...';
             statusEl.style.color = '#50b1f7';
             showLoading(true);
 
             try {
+                // First, check user's current usage and plan
+                const { data: usage, error: usageError } = await supabase
+                    .from('user_usage')
+                    .select('document_count, is_pro')
+                    .eq('user_id', currentUser.id)
+                    .single();
+
+                if (usageError) throw new Error('Could not verify user usage.');
+                
+                const MAX_FREE_DOCS = 20; // Your free tier limit
+                if (!usage.is_pro && usage.document_count >= MAX_FREE_DOCS) {
+                     statusEl.innerHTML = `You've reached the free limit of ${MAX_FREE_DOCS} docs. <a href="./index.html" class="text-[#50b1f7] hover:underline">Upgrade to Pro</a> for unlimited creation.`;
+                     statusEl.style.color = '#f59e0b';
+                     showLoading(false);
+                     return;
+                }
+
+                // If usage is okay, proceed to create the document
+                statusEl.textContent = 'Creating document...';
                 const response = await gapi.client.docs.documents.create({ title: title });
                 const docId = response.result.documentId;
 
-                try {
-                    await gapi.client.docs.documents.batchUpdate({
-                        documentId: docId,
-                        requests: [{
-                            insertText: {
-                                text: content,
-                                location: { index: 1 }
-                            }
-                        }]
-                    });
-
-                    statusEl.innerHTML = `Document created! <a href="https://docs.google.com/document/d/${docId}/edit" target="_blank" class="text-[#50b1f7] hover:underline">Open Document</a>`;
-                    statusEl.style.color = '#10b981';
-                } catch (updateError) {
-                    statusEl.innerHTML = `Document created but content couldn't be added. <a href="https://docs.google.com/document/d/${docId}/edit" target="_blank" class="text-[#50b1f7] hover:underline">Open Document</a>`;
-                    statusEl.style.color = '#f59e0b';
-                    console.error('Content update failed:', updateError);
+                // --- THIS IS THE FIX ---
+                // Document created successfully, now increment the count in Supabase
+                const { error: rpcError } = await supabase.rpc('increment_doc_count', {
+                    p_user_id: currentUser.id
+                });
+                
+                if (rpcError) {
+                    // Log the error but don't stop the user, as the doc is already made.
+                    // This error means the count might be out of sync.
+                    console.error('Critical: Google Doc was created but usage count failed to update:', rpcError.message);
                 }
+                // --- END OF FIX ---
+
+                // Proceed to add content to the new document
+                await gapi.client.docs.documents.batchUpdate({
+                    documentId: docId,
+                    requests: [{
+                        insertText: {
+                            text: content,
+                            location: { index: 1 }
+                        }
+                    }]
+                });
+
+                statusEl.innerHTML = `Document created! <a href="https://docs.google.com/document/d/${docId}/edit" target="_blank" class="text-[#50b1f7] hover:underline">Open Document</a>`;
+                statusEl.style.color = '#10b981';
+
             } catch (err) {
                 const errorMsg = err?.result?.error?.message || err.message;
                 statusEl.textContent = errorMsg.includes('authentication') ?
-                    'Authentication expired. Please refresh the page.' :
+                    'Authentication expired. Please refresh and sign in again.' :
                     `Error: ${errorMsg}`;
                 statusEl.style.color = '#ef4444';
                 console.error(err);
