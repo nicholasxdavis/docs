@@ -272,24 +272,39 @@
             showLoading(true);
 
             try {
-                // First, check user's current usage and plan
-                const { data: usage, error: usageError } = await supabase
+                // First, check user's current usage and plan.
+                let { data: usage, error: usageError } = await supabase
                     .from('user_usage')
                     .select('sheet_count, is_pro')
                     .eq('user_id', currentUser.id)
-                    .single();
+                    .maybeSingle();
 
-                if (usageError) throw new Error('Could not verify user usage.');
+                if (usageError) throw usageError;
+
+                if (!usage) {
+                    const { data: newUsage, error: insertError } = await supabase
+                        .from('user_usage')
+                        .insert({ user_id: currentUser.id, sheet_count: 0, document_count: 0, is_pro: false })
+                        .select('sheet_count, is_pro')
+                        .single();
+
+                    if (insertError) {
+                        console.error('Failed to create user usage record:', insertError);
+                        throw new Error('Could not initialize user usage.');
+                    }
+                    usage = newUsage;
+                }
+
+                const sheetCount = usage.sheet_count || 0;
                 
-                const MAX_FREE_SHEETS = 15; // Free tier limit for sheets
-                if (!usage.is_pro && usage.sheet_count >= MAX_FREE_SHEETS) {
+                const MAX_FREE_SHEETS = 15;
+                if (!usage.is_pro && sheetCount >= MAX_FREE_SHEETS) {
                      statusEl.innerHTML = `You've reached the free limit of ${MAX_FREE_SHEETS} sheets. <a href="./index.html" class="text-[#50b1f7] hover:underline">Upgrade to Pro</a> for unlimited creation.`;
                      statusEl.style.color = '#f59e0b';
                      showLoading(false);
                      return;
                 }
 
-                // If usage is okay, proceed to create the spreadsheet
                 statusEl.textContent = 'Creating spreadsheet...';
                 const response = await gapi.client.sheets.spreadsheets.create({
                     properties: {
@@ -298,7 +313,6 @@
                 });
                 const sheetId = response.result.spreadsheetId;
 
-                // Increment the sheet count in Supabase
                 const { error: rpcError } = await supabase.rpc('increment_sheet_count', {
                     p_user_id: currentUser.id
                 });
@@ -307,53 +321,65 @@
                     console.error('Critical: Google Sheet was created but usage count failed to update:', rpcError.message);
                 }
 
-                // Process the content into sheet data
                 let requests = [];
                 
-                // Try to parse as JSON (for structured data)
                 try {
                     const data = JSON.parse(content);
-                    if (Array.isArray(data) && data.length > 0) {
-                        // Handle array of objects (convert to rows and columns)
+                    if (Array.isArray(data) && data.length > 0 && typeof data[0] === 'object' && data[0] !== null) {
                         const headers = Object.keys(data[0]);
-                        const values = data.map(obj => headers.map(header => obj[header]));
-                        
+                        const values = data.map(obj => headers.map(header => obj[header] !== undefined && obj[header] !== null ? obj[header] : ''));
+
+                        // Request 1: Update header with formatting
                         requests.push({
                             updateCells: {
                                 range: {
                                     sheetId: 0,
                                     startRowIndex: 0,
-                                    endRowIndex: values.length + 1,
+                                    endRowIndex: 1,
                                     startColumnIndex: 0,
                                     endColumnIndex: headers.length
                                 },
-                                rows: [
-                                    {
-                                        values: headers.map(header => ({
-                                            userEnteredValue: { stringValue: header },
-                                            userEnteredFormat: {
-                                                textFormat: { bold: true },
-                                                backgroundColor: { red: 0.2, green: 0.6, blue: 0.8 }
-                                            }
-                                        }))
-                                    },
-                                    ...values.map(row => ({
-                                        values: row.map(cell => ({
-                                            userEnteredValue: typeof cell === 'number' ? 
-                                                { numberValue: cell } : { stringValue: String(cell) }
-                                        }))
+                                rows: [{
+                                    values: headers.map(header => ({
+                                        userEnteredValue: { stringValue: header },
+                                        userEnteredFormat: {
+                                            textFormat: { bold: true },
+                                            backgroundColor: { red: 0.9, green: 0.9, blue: 0.9 }
+                                        }
                                     }))
-                                ],
-                                fields: 'userEnteredValue,userEnteredFormat'
+                                }],
+                                fields: 'userEnteredValue,userEnteredFormat.textFormat,userEnteredFormat.backgroundColor'
                             }
                         });
+
+                        // Request 2: Update data rows
+                        if (values.length > 0) {
+                            requests.push({
+                                updateCells: {
+                                    range: {
+                                        sheetId: 0,
+                                        startRowIndex: 1,
+                                        endRowIndex: values.length + 1,
+                                        startColumnIndex: 0,
+                                        endColumnIndex: headers.length
+                                    },
+                                    rows: values.map(row => ({
+                                        values: row.map(cell => ({
+                                            userEnteredValue: typeof cell === 'number' ? { numberValue: cell } : { stringValue: String(cell) }
+                                        }))
+                                    })),
+                                    fields: 'userEnteredValue'
+                                }
+                            });
+                        }
+                    } else {
+                        throw new Error("Input is not a valid JSON array of objects.");
                     }
                 } catch (e) {
-                    // If not JSON, treat as plain text with possible CSV structure
-                    const lines = content.split('\n');
+                    const lines = content.split('\n').filter(line => line.trim() !== '');
                     const rows = lines.map(line => line.split(',').map(cell => cell.trim()));
                     
-                    if (rows.length > 0) {
+                    if(rows.length > 0) {
                         requests.push({
                             updateCells: {
                                 range: {
@@ -361,8 +387,7 @@
                                     startRowIndex: 0,
                                     endRowIndex: rows.length,
                                     startColumnIndex: 0,
-                                    // FIX: More robust way to get column count
-                                    endColumnIndex: (rows[0] && rows[0].length) ? rows[0].length : 1
+                                    endColumnIndex: rows[0]?.length || 1
                                 },
                                 rows: rows.map(row => ({
                                     values: row.map(cell => ({
@@ -372,47 +397,29 @@
                                 fields: 'userEnteredValue'
                             }
                         });
+                        requests.push({
+                            repeatCell: {
+                                range: { sheetId: 0, startRowIndex: 0, endRowIndex: 1 },
+                                cell: { userEnteredFormat: { textFormat: { bold: true }, backgroundColor: { red: 0.9, green: 0.9, blue: 0.9 } } },
+                                fields: 'userEnteredFormat.textFormat,userEnteredFormat.backgroundColor'
+                            }
+                        });
                     }
                 }
 
-                // Format the header row if there are requests
-                if (requests.length > 0) {
-                    requests.push({
-                        repeatCell: {
-                            range: {
-                                sheetId: 0,
-                                startRowIndex: 0,
-                                endRowIndex: 1
-                            },
-                            cell: {
-                                userEnteredFormat: {
-                                    textFormat: { bold: true },
-                                    backgroundColor: { red: 0.2, green: 0.6, blue: 0.8 }
-                                }
-                            },
-                            fields: 'userEnteredFormat(textFormat,backgroundColor)'
-                        }
-                    });
-
-                    // Auto-resize columns
+                if(requests.length > 0){
                     requests.push({
                         autoResizeDimensions: {
                             dimensions: {
                                 sheetId: 0,
-                                dimension: 'COLUMNS',
-                                startIndex: 0,
-                                endIndex: 20 // A reasonable default max
+                                dimension: 'COLUMNS'
                             }
                         }
                     });
-                }
 
-
-                // Batch update the sheet with our requests if there are any
-                if (requests.length > 0) {
                     await gapi.client.sheets.spreadsheets.batchUpdate({
                         spreadsheetId: sheetId,
-                        requests: requests
+                        resource: { requests: requests }
                     });
                 }
 
@@ -443,8 +450,8 @@
 
             const shouldFormat = document.getElementById('ai-format-toggle').checked;
             const prompt = shouldFormat
-                ? `You are a professional data assistant. Take the following description or data structure and: 1) Generate a well-structured spreadsheet layout, 2) Include appropriate column headers, 3) Provide sample data that matches the description, 4) Format as a JSON array of objects where each object represents a row. Return only the JSON data without any additional commentary. Description: "${originalContent}"`
-                : `You are a helpful data assistant. Take the following description and generate a spreadsheet structure with appropriate columns and sample data. Return the data as a JSON array of objects where each object represents a row. Description: "${originalContent}"`;
+                ? `You are a professional data assistant. Take the following description or data structure and: 1) Generate a well-structured spreadsheet layout, 2) Include appropriate column headers, 3) Provide 10-15 rows of realistic sample data that matches the description, 4) Format the entire output as a single JSON array of objects where each object represents a row. Return ONLY the raw JSON data without any surrounding text, markdown, or commentary. Description: "${originalContent}"`
+                : `You are a helpful data assistant. Take the following description and generate a spreadsheet structure with appropriate columns and 10-15 rows of sample data. Return the data as a single JSON array of objects where each object represents a row. Return ONLY the raw JSON data without any surrounding text, markdown, or commentary. Description: "${originalContent}"`;
 
             statusEl.textContent = 'AI is generating your data...';
             statusEl.style.color = '#8b5cf6';
@@ -471,13 +478,24 @@
                 }
 
                 const result = await response.json();
-                const enhancedText = result.choices?.[0]?.message?.content;
+                let enhancedText = result.choices?.[0]?.message?.content;
 
                 if (!enhancedText) throw new Error('No content returned from AI.');
 
-                contentEl.value = enhancedText;
-                statusEl.textContent = 'Data generated successfully!';
-                statusEl.style.color = '#10b981';
+                const jsonMatch = enhancedText.match(/\[[\s\S]*\]/);
+                if (jsonMatch) {
+                    enhancedText = jsonMatch[0];
+                }
+
+                try {
+                    const parsedJson = JSON.parse(enhancedText);
+                    contentEl.value = JSON.stringify(parsedJson, null, 2); // Pretty print
+                    statusEl.textContent = 'Data generated successfully!';
+                    statusEl.style.color = '#10b981';
+                } catch (e) {
+                    throw new Error('AI returned invalid JSON format.');
+                }
+
             } catch (error) {
                 statusEl.textContent = `AI Error: ${error.message}`;
                 statusEl.style.color = '#ef4444';
