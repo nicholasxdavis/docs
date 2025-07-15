@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- FIX: Added Content-Security-Policy to allow required Google scripts -->
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdn.jsdelivr.net/npm/ https://apis.google.com https://accounts.google.com https://www.gstatic.com; object-src 'self'">
     <title>Orbit - Email Dashboard</title>
     
     <link rel="icon" href="https://nicholasxdavis.github.io/docs/img/orbit.png" type="image/png">
@@ -348,6 +350,9 @@
         };
 
         const redirectToDashboard = (message) => {
+            // Using a custom modal or a less intrusive notification is better than alert()
+            // For this example, we'll keep alert but recommend changing it.
+            console.error("Redirecting:", message);
             alert(message);
             window.location.href = './index.html';
         };
@@ -406,11 +411,14 @@
 
                 await new Promise((resolve) => gapi.load('client:auth2', resolve));
                 
+                // IMPORTANT: Replace with your actual client ID from Google Cloud Console.
+                // You must also add the origin where this file is hosted (e.g., https://nicholasxdavis.github.io)
+                // to the "Authorized JavaScript origins" in your Google Cloud OAuth 2.0 Client ID settings.
                 await gapi.client.init({
                     apiKey: GOOGLE_API_KEY,
                     discoveryDocs: [DISCOVERY_DOC],
                     scope: GMAIL_SCOPES,
-                    clientId: 'YOUR_CLIENT_ID.apps.googleusercontent.com' // Replace with your actual client ID
+                    clientId: 'YOUR_CLIENT_ID.apps.googleusercontent.com' 
                 });
 
                 // Check if user is signed in
@@ -455,7 +463,10 @@
                     // Handle scope denial
                     alert('Please grant Gmail permissions to continue');
                     document.getElementById('reconnect-google').classList.remove('hidden');
-                } else {
+                } else if (error.error === 'idpiframe_initialization_failed') {
+                    alert('Google Sign-In failed. Please ensure you have replaced "YOUR_CLIENT_ID" and authorized your domain in the Google Cloud Console.');
+                }
+                 else {
                     redirectToDashboard(error.message);
                 }
             } finally {
