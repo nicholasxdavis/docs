@@ -260,6 +260,7 @@
                             previewHtml += `<input type="text" class="w-full p-2 bg-dark-primary rounded-md border border-dark-tertiary/50" disabled>`;
                             break;
                         case 'MULTIPLE_CHOICE':
+                        case 'RADIO':
                             q.options?.forEach(opt => {
                                 previewHtml += `<div class="flex items-center mb-1"><input type="radio" disabled class="mr-2"><label>${opt}</label></div>`;
                             });
@@ -359,30 +360,46 @@
                 }
 
                 const questionRequests = questions.map((q, index) => {
-                    // FIX: Correctly structure the questionItem
-                    const questionItemPayload = {
-                        question: {
-                            required: q.required || false,
+                    const item = {
+                        title: q.title,
+                        questionItem: {
+                            question: {
+                                required: q.required || false,
+                            },
                         },
                     };
 
-                    if (q.type === 'TEXT') {
-                        questionItemPayload.question.textQuestion = {};
+                    const questionType = (q.type || 'TEXT').toUpperCase();
+
+                    if (questionType === 'TEXT') {
+                        item.questionItem.question.textQuestion = {};
                     } else {
-                        questionItemPayload.question.choiceQuestion = {
-                            type: q.type || 'MULTIPLE_CHOICE',
+                        let apiChoiceType;
+                        switch (questionType) {
+                            case 'MULTIPLE_CHOICE':
+                            case 'RADIO': // FIX: Handle RADIO type from user/AI
+                                apiChoiceType = 'RADIO';
+                                break;
+                            case 'CHECKBOX':
+                                apiChoiceType = 'CHECKBOX';
+                                break;
+                            case 'DROP_DOWN':
+                                apiChoiceType = 'DROP_DOWN';
+                                break;
+                            default:
+                                apiChoiceType = 'RADIO'; 
+                        }
+                        item.questionItem.question.choiceQuestion = {
+                            type: apiChoiceType,
                             options: q.options?.map(opt => ({ value: opt })) || [],
                         };
                     }
 
                     return {
                         createItem: {
-                            item: {
-                                title: q.title,
-                                questionItem: questionItemPayload
-                            },
-                            location: { index }
-                        }
+                            item: item,
+                            location: { index },
+                        },
                     };
                 });
 
@@ -416,7 +433,8 @@
                 return;
             }
 
-            const prompt = `Based on the form description "${description}", generate a list of 5-7 relevant questions. Return a JSON array of objects. Each object should have "title" (string), "type" (string, e.g., 'TEXT', 'MULTIPLE_CHOICE', 'CHECKBOX'), and optionally "options" (an array of strings for choice types).`;
+            // FIX: Updated prompt to be more specific about the output format
+            const prompt = `Based on the form description "${description}", generate a list of 5-7 relevant questions. Return a JSON array of objects. Each object must have "title" (string) and "type" (string). The type must be one of: 'TEXT', 'RADIO', 'CHECKBOX'. For 'RADIO' and 'CHECKBOX' types, you must also include an "options" property which is an array of strings. For 'RADIO' questions, use the type "RADIO".`;
 
             statusEl.textContent = 'AI is generating questions...';
             statusEl.style.color = '#8b5cf6';
