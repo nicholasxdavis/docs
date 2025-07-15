@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orbit - Docs Tool</title>
     
-    <link rel="icon" href="https://nicholasxdavis.github.io/docs/img/orbit.png" type="image/png">
+   <link rel="icon" href="https://nicholasxdavis.github.io/docs/img/orbit.png" type="image/png">
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
@@ -61,7 +61,7 @@
     <div class="container mx-auto px-4 md:px-8 py-6">
         <header class="flex justify-between items-center mb-12 animate-fade-up">
             <div class="flex items-center gap-3">
-                <img src="https://nicholasxdavis.github.io/docs/img/logo.png" alt="Orbit Logo" class="w-20 h-100%">
+                          <img src="https://nicholasxdavis.github.io/docs/img/logo.png" alt="Orbit Logo" class="w-20 h-100%">
             </div>
             <a href="./index.html" class="bg-dark-secondary text-dark-light font-medium py-2 px-4 rounded-lg hover:bg-dark-tertiary transition-all flex items-center gap-2 btn-micro">
                 &larr; Back to Dashboard
@@ -112,7 +112,7 @@
         </div>
     </div>
 
-    <div id="loading-skeleton" class="fixed inset-0 bg-dark-primary/90 z-[2000] flex items-center justify-center hidden">
+    <div id="loading-skeleton" class="fixed inset-0 bg-dark-primary/90 z-[2000] flex items-center justify-center">
         <div class="loader"></div>
     </div>
 
@@ -166,82 +166,62 @@
             }
         }
 
-        async function getGoogleToken(userId) {
-            try {
-                const { data, error } = await supabase
-                    .from('user_google_tokens')
-                    .select('access_token, expires_at')
-                    .eq('user_id', userId);
-
-                if (error) throw error;
-                
-                // Handle case where no token exists yet
-                if (!data || data.length === 0) {
-                    return null;
-                }
-                
-                return data[0]; // Return the first token if multiple exist
-            } catch (error) {
-                console.error('Supabase query error:', error);
-                throw new Error('Failed to fetch Google token');
-            }
-        }
+       async function getGoogleToken(userId) {
+    try {
+        const { data, error } = await supabase
+            .from('user_google_tokens')
+            .select('access_token, expires_at')
+            .eq('user_id', userId);
+            
+        if (error) throw error;
+        return data?.[0] || null; // Return first item or null
+    } catch (error) {
+        console.error('Supabase query error:', error);
+        throw new Error('Failed to fetch Google token');
+    }
+}
 
         async function initializeApp() {
-            showLoading(true);
-            try {
-                // Check for active session
-                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-                if (sessionError || !session) {
-                    throw new Error('No active session');
-                }
-
-                // Load Google token
-                const tokenData = await getGoogleToken(session.user.id);
-                if (!tokenData || !tokenData.access_token) {
-                    throw new Error('No Google token found. Please reconnect your Google account.');
-                }
-
-                // Check token expiration
-                const now = new Date();
-                const expiresAt = new Date(tokenData.expires_at);
-                if (expiresAt <= now) {
-                    throw new Error('Google token expired. Please reconnect your Google account.');
-                }
-
-                // Validate token with Google
-                const isValid = await validateGoogleToken(tokenData.access_token);
-                if (!isValid) {
-                    throw new Error('Invalid Google token. Please reconnect your Google account.');
-                }
-
-                // Initialize Google API client
-                await new Promise((resolve) => gapi.load('client', resolve));
-                await gapi.client.init({
-                    apiKey: GOOGLE_API_KEY,
-                    discoveryDocs: [DISCOVERY_DOC],
-                });
-
-                // Set the valid token
-                gapi.client.setToken({
-                    access_token: tokenData.access_token,
-                    token_type: 'Bearer'
-                });
-
-                // Show the app content
-                appContent.classList.remove('hidden');
-
-            } catch (error) {
-                console.error('Initialization error:', error);
-                redirectToDashboard(error.message.includes('session') ?
-                    'Please login first' :
-                    error.message.includes('Google') ?
-                    error.message :
-                    'Google integration error. Please reconnect your Google account.');
-            } finally {
-                showLoading(false);
-            }
+    showLoading(true);
+    try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !session) {
+            throw new Error('No active session');
         }
+
+        const tokenData = await getGoogleToken(session.user.id);
+        if (!tokenData || !tokenData.access_token) {
+            throw new Error('No Google token found');
+        }
+
+        const now = new Date();
+        const expiresAt = new Date(tokenData.expires_at);
+        if (expiresAt <= now) {
+            throw new Error('Google token expired');
+        }
+
+        await new Promise((resolve) => gapi.load('client', resolve));
+        await gapi.client.init({
+            apiKey: GOOGLE_API_KEY,
+            discoveryDocs: [DISCOVERY_DOC],
+        });
+
+        gapi.client.setToken({
+            access_token: tokenData.access_token,
+            token_type: 'Bearer'
+        });
+
+        appContent.classList.remove('hidden');
+
+    } catch (error) {
+        console.error('Initialization error:', error);
+        redirectToDashboard(error.message.includes('session') ?
+            'Please login first' :
+            'Google integration error. Please reconnect your Google account.');
+    } finally {
+        showLoading(false);
+    }
+}
 
         async function generateDocument() {
             const title = document.getElementById('doc-title').value.trim();
@@ -286,13 +266,6 @@
                     `Error: ${errorMsg}`;
                 statusEl.style.color = '#ef4444';
                 console.error(err);
-                
-                // If it's an auth error, suggest reconnecting
-                if (errorMsg.includes('authentication')) {
-                    setTimeout(() => {
-                        redirectToDashboard('Google authentication expired. Please reconnect your account.');
-                    }, 2000);
-                }
             } finally {
                 showLoading(false);
             }
@@ -360,5 +333,6 @@
         aiEnhanceBtn.addEventListener('click', enhanceWithAI);
     });
 </script>
+
 </body>
 </html>
