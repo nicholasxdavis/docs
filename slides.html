@@ -72,37 +72,28 @@
             <div class="glassmorphism p-8 rounded-2xl shadow-xl">
                 <div id="slides-generator">
                     <div class="mb-8">
-                        <h2 class="text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-400">Create New Presentation</h2>
-                        <p class="text-dark-tertiary">Use the form below to generate a new Google Slides presentation with AI.</p>
+                        <h2 class="text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-yellow-400">Create New Presentation</h2>
+                        <p class="text-dark-tertiary">Describe your presentation and let AI build the slides for you.</p>
                     </div>
                     
                     <div class="space-y-6">
                         <div>
                             <label for="slides-title" class="block text-sm font-medium text-dark-tertiary mb-2">Presentation Title</label>
-                            <input type="text" id="slides-title" placeholder="e.g., Q3 Marketing Strategy" class="w-full p-3 bg-dark-secondary border border-dark-tertiary rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06b2fc] text-dark-light placeholder-dark-tertiary">
+                            <input type="text" id="slides-title" placeholder="e.g., Q4 Company All-Hands" class="w-full p-3 bg-dark-secondary border border-dark-tertiary rounded-lg focus:outline-none focus:ring-2 focus:ring-[#f97316] text-dark-light placeholder-dark-tertiary">
                         </div>
                         <div>
-                            <div class="flex justify-between items-center mb-2">
-                                <label for="slides-content" class="block text-sm font-medium text-dark-tertiary">Content</label>
-                                <div class="flex items-center space-x-2">
-                                    <span class="text-xs text-dark-tertiary">AI Formatting</span>
-                                    <div class="relative inline-block w-10 mr-2 align-middle select-none">
-                                        <input type="checkbox" id="ai-format-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
-                                        <label for="ai-format-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
-                                    </div>
-                                </div>
-                            </div>
-                            <textarea id="slides-content" rows="12" placeholder="Enter your presentation content here, or describe what you need and use the AI to generate it..." class="w-full p-4 custom-textarea rounded-lg focus:outline-none text-dark-light placeholder-dark-tertiary resize-none"></textarea>
+                            <label for="slides-content" class="block text-sm font-medium text-dark-tertiary mb-2">Presentation Content</label>
+                            <textarea id="slides-content" rows="12" placeholder="Describe the topic and key points for your presentation. The AI will generate slides with titles, content, and speaker notes based on your input." class="w-full p-4 custom-textarea rounded-lg focus:outline-none text-dark-light placeholder-dark-tertiary resize-none"></textarea>
                         </div>
                     </div>
 
                     <div class="flex flex-col sm:flex-row gap-4 mt-8">
-                        <button id="ai-enhance-btn" class="flex-1 bg-[#06b2fc] text-white font-semibold py-3 px-6 rounded-lg hover:bg-[#0595d8] transition-all transform btn-micro flex items-center justify-center gap-2">
+                         <button id="ai-enhance-btn" class="flex-1 bg-[#06b2fc] text-white font-semibold py-3 px-6 rounded-lg hover:bg-[#0595d8] transition-all transform btn-micro flex items-center justify-center gap-2">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path></svg>
                             <span>Generate with AI</span>
                         </button>
-                        <button id="generate-slides-btn" class="flex-1 bg-gradient-to-r from-purple-400 to-pink-300 text-white font-semibold py-3 px-6 rounded-lg hover:from-purple-300 hover:to-pink-200 transition-all transform btn-micro flex items-center justify-center gap-2">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm3 2h6v4H7V5zm8 8v2h1v-2h-1zm-2-8h1V5h-1v2zm1 4v2h-1v-2h1zm-2 0h1v-2h-1v2zm1 4v2h-1v-2h1zm-2 0h1v-2h-1v2z" clip-rule="evenodd"></path></svg>
+                        <button id="generate-slides-btn" class="flex-1 bg-gradient-to-r from-orange-400 to-yellow-300 text-white font-semibold py-3 px-6 rounded-lg hover:from-orange-300 hover:to-yellow-200 transition-all transform btn-micro flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2h-8zM2 4a2 2 0 012-2h2v16H4a2 2 0 01-2-2V4z"></path></svg>
                             <span>Create Google Slides</span>
                         </button>
                     </div>
@@ -143,9 +134,8 @@
 
     const OPENROUTER_API_KEY = deobfuscate('s*k*-*o*r*-*v*1*-*b*2*1*9*8*5*d*9*f*5*7*4*2*0*1*8*b*8*d*8*e*9*d*8*e*3*6*f*f*f*9*c*1*5*b*8*3*1*6*2*1*8*8*9*1*c*a*5*e*3*2*6*a*3*a*2*f*d*5*4*b*a*4*7');
     const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-    const DEFAULT_MODEL = 'moonshotai/kimi-k2:free';
+    const DEFAULT_MODEL = 'google/gemini-pro';
     
-    // Global variable to hold user data
     let currentUser = null;
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -169,7 +159,6 @@
             try {
                 const response = await fetch(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}`);
                 if (!response.ok) return false;
-                
                 const data = await response.json();
                 return !data.error && data.expires_in > 0;
             } catch {
@@ -184,20 +173,14 @@
                     .select('access_token, expires_at')
                     .eq('user_id', userId)
                     .single();
-
                 if (error) throw error;
                 if (!data) return null;
-                
                 const now = new Date();
                 const expiresAt = new Date(data.expires_at);
                 if (expiresAt <= now) {
-                    await supabase
-                        .from('user_google_tokens')
-                        .delete()
-                        .eq('user_id', userId);
+                    await supabase.from('user_google_tokens').delete().eq('user_id', userId);
                     return null;
                 }
-                
                 return data;
             } catch (error) {
                 console.error('Supabase query error:', error);
@@ -212,7 +195,6 @@
                 if (sessionError || !session) {
                     throw new Error('No active session. Please login first.');
                 }
-                
                 currentUser = session.user;
 
                 const tokenData = await getGoogleToken(currentUser.id);
@@ -237,7 +219,6 @@
                 });
 
                 appContent.classList.remove('hidden');
-
             } catch (error) {
                 console.error('Initialization error:', error);
                 statusEl.textContent = error.message;
@@ -268,163 +249,114 @@
             }
             
             statusEl.textContent = 'Checking usage limits...';
-            statusEl.style.color = '#8b5cf6';
+            statusEl.style.color = '#06b2fc';
             showLoading(true);
 
             try {
-                // First, check user's current usage and plan
-                const { data: usage, error: usageError } = await supabase
+                let { data: usage, error: usageError } = await supabase
                     .from('user_usage')
-                    .select('slides_count, is_pro')
+                    .select('document_count, is_pro') // FIX: Changed 'slides_count' to 'document_count'
                     .eq('user_id', currentUser.id)
-                    .single();
+                    .maybeSingle();
 
-                if (usageError) throw new Error('Could not verify user usage.');
-                
-                const MAX_FREE_SLIDES = 10; // Free tier limit for slides
-                if (!usage.is_pro && usage.slides_count >= MAX_FREE_SLIDES) {
-                     statusEl.innerHTML = `You've reached the free limit of ${MAX_FREE_SLIDES} presentations. <a href="./index.html" class="text-[#50b1f7] hover:underline">Upgrade to Pro</a> for unlimited creation.`;
+                if (usageError) throw usageError;
+
+                if (!usage) {
+                    const { data: newUsage, error: insertError } = await supabase
+                        .from('user_usage')
+                        .insert({ user_id: currentUser.id, document_count: 0, is_pro: false })
+                        .select('document_count, is_pro')
+                        .single();
+                    if (insertError) throw new Error('Could not initialize user usage.');
+                    usage = newUsage;
+                }
+
+                const docCount = usage.document_count || 0;
+                const MAX_FREE_DOCS = 20;
+                if (!usage.is_pro && docCount >= MAX_FREE_DOCS) {
+                     statusEl.innerHTML = `You've reached the free limit of ${MAX_FREE_DOCS} documents. <a href="./index.html" class="text-[#50b1f7] hover:underline">Upgrade to Pro</a> for unlimited creation.`;
                      statusEl.style.color = '#f59e0b';
                      showLoading(false);
                      return;
                 }
 
-                // If usage is okay, proceed to create the presentation
                 statusEl.textContent = 'Creating presentation...';
-                const response = await gapi.client.slides.presentations.create({
-                    title: title
-                });
-                const presentationId = response.result.presentationId;
+                const presentation = await gapi.client.slides.presentations.create({ title });
+                const presentationId = presentation.result.presentationId;
 
-                // Increment the slides count in Supabase
-                const { error: rpcError } = await supabase.rpc('increment_slides_count', {
+                const { error: rpcError } = await supabase.rpc('increment_doc_count', { // FIX: Changed RPC call
                     p_user_id: currentUser.id
                 });
-                
                 if (rpcError) {
                     console.error('Critical: Google Slides was created but usage count failed to update:', rpcError.message);
                 }
 
-                // Process the content into slides
                 let requests = [];
-                let slideCount = 0;
-
-                // Try to parse as JSON (for structured data)
                 try {
-                    const data = JSON.parse(content);
-                    if (Array.isArray(data)) {
-                        // Create slides for each item in the array
-                        data.forEach((slideData, index) => {
-                            // Add a new slide
+                    const slidesData = JSON.parse(content);
+                    if (Array.isArray(slidesData)) {
+                        slidesData.forEach((slide, index) => {
+                            const slideId = `slide_${index}_${Date.now()}`;
                             requests.push({
                                 createSlide: {
-                                    objectId: `slide_${index}`,
-                                    slideLayoutReference: {
-                                        predefinedLayout: 'TITLE_AND_BODY'
-                                    }
+                                    objectId: slideId,
+                                    slideLayoutReference: { predefinedLayout: 'TITLE_AND_BODY' }
                                 }
                             });
-
-                            // Add title and content to the slide
-                            if (slideData.title) {
+                            if (slide.title) {
                                 requests.push({
                                     insertText: {
-                                        objectId: `slide_${index}_title`,
-                                        text: slideData.title,
-                                        insertionIndex: 0
+                                        objectId: slideId,
+                                        text: slide.title,
+                                        insertionIndex: 0,
+                                        cellLocation: { rowIndex: 0, columnIndex: 0 }
                                     }
                                 });
                             }
-
-                            if (slideData.content) {
+                            if (slide.body) {
                                 requests.push({
                                     insertText: {
-                                        objectId: `slide_${index}_content`,
-                                        text: slideData.content,
-                                        insertionIndex: 0
+                                        objectId: slideId,
+                                        text: slide.body,
+                                        insertionIndex: 0,
+                                        cellLocation: { rowIndex: 1, columnIndex: 0 }
                                     }
                                 });
                             }
-
-                            slideCount++;
                         });
                     }
-                } catch (e) {
-                    // If not JSON, treat as plain text with slide separators
-                    const slides = content.split('\n\n');
-                    
-                    slides.forEach((slideContent, index) => {
-                        // Add a new slide
-                        requests.push({
-                            createSlide: {
-                                objectId: `slide_${index}`,
-                                slideLayoutReference: {
-                                    predefinedLayout: 'TITLE_AND_BODY'
-                                }
-                            }
-                        });
-
-                        // Split into title and content (first line is title)
-                        const lines = slideContent.split('\n');
-                        const title = lines[0] || 'Untitled Slide';
-                        const content = lines.slice(1).join('\n');
-
-                        // Add title and content to the slide
-                        requests.push({
-                            insertText: {
-                                objectId: `slide_${index}_title`,
-                                text: title,
-                                insertionIndex: 0
-                            }
-                        });
-
-                        if (content) {
-                            requests.push({
-                                insertText: {
-                                    objectId: `slide_${index}_content`,
-                                    text: content,
-                                    insertionIndex: 0
-                                }
-                            });
-                        }
-
-                        slideCount++;
-                    });
-                }
-
-                // If no slides were created (invalid format), create one default slide
-                if (slideCount === 0) {
+                } catch(e) {
+                    // Fallback for plain text
                     requests.push({
                         createSlide: {
-                            objectId: 'slide_0',
-                            slideLayoutReference: {
-                                predefinedLayout: 'TITLE_AND_BODY'
-                            }
+                            objectId: 'fallback_slide',
+                            slideLayoutReference: { predefinedLayout: 'TITLE_AND_BODY' }
                         }
                     });
-                    requests.push({
+                     requests.push({
                         insertText: {
-                            objectId: 'slide_0_title',
+                            objectId: 'fallback_slide',
                             text: title,
-                            insertionIndex: 0
+                            cellLocation: { rowIndex: 0, columnIndex: 0 }
                         }
                     });
-                    requests.push({
+                     requests.push({
                         insertText: {
-                            objectId: 'slide_0_content',
+                            objectId: 'fallback_slide',
                             text: content,
-                            insertionIndex: 0
+                            cellLocation: { rowIndex: 1, columnIndex: 0 }
                         }
                     });
                 }
 
-                // Batch update the presentation with our requests
-                await gapi.client.slides.presentations.batchUpdate({
-                    presentationId: presentationId,
-                    requests: requests
-                });
+                if (requests.length > 0) {
+                    await gapi.client.slides.presentations.batchUpdate({
+                        presentationId,
+                        requests
+                    });
+                }
 
-                statusEl.innerHTML = `Presentation created with ${slideCount || 1} slides! <a href="https://docs.google.com/presentation/d/${presentationId}/edit" target="_blank" class="text-[#50b1f7] hover:underline">Open Presentation</a>`;
+                statusEl.innerHTML = `Presentation created! <a href="https://docs.google.com/presentation/d/${presentationId}/edit" target="_blank" class="text-[#f97316] hover:underline">Open Presentation</a>`;
                 statusEl.style.color = '#10b981';
 
             } catch (err) {
@@ -444,17 +376,14 @@
             const originalContent = contentEl.value.trim();
 
             if (!originalContent) {
-                statusEl.textContent = 'Please enter some content to enhance.';
+                statusEl.textContent = 'Please enter a description to generate slides.';
                 statusEl.style.color = '#ef4444';
                 return;
             }
 
-            const shouldFormat = document.getElementById('ai-format-toggle').checked;
-            const prompt = shouldFormat
-                ? `You are a professional presentation assistant. Take the following description and: 1) Generate a well-structured presentation outline, 2) Include appropriate slide titles and content, 3) Format as a JSON array where each object represents a slide with "title" and "content" properties. Return only the JSON data without any additional commentary. Description: "${originalContent}"`
-                : `You are a helpful presentation assistant. Take the following description and generate a presentation structure with appropriate slide titles and content. Return the data as a JSON array where each object represents a slide with "title" and "content" properties. Description: "${originalContent}"`;
+            const prompt = `Based on the following description, create a presentation. Return a JSON array of objects, where each object represents a slide and has 'title' and 'body' properties. The body can include bullet points using '\\n- '. Description: "${originalContent}"`;
 
-            statusEl.textContent = 'AI is generating your presentation...';
+            statusEl.textContent = 'AI is building your presentation...';
             statusEl.style.color = '#8b5cf6';
             showLoading(true);
 
@@ -479,13 +408,23 @@
                 }
 
                 const result = await response.json();
-                const enhancedText = result.choices?.[0]?.message?.content;
+                let enhancedText = result.choices?.[0]?.message?.content;
 
                 if (!enhancedText) throw new Error('No content returned from AI.');
 
-                contentEl.value = enhancedText;
-                statusEl.textContent = 'Presentation generated successfully!';
-                statusEl.style.color = '#10b981';
+                const jsonMatch = enhancedText.match(/\[[\s\S]*\]/);
+                if (jsonMatch) {
+                    enhancedText = jsonMatch[0];
+                }
+
+                try {
+                    const parsedJson = JSON.parse(enhancedText);
+                    contentEl.value = JSON.stringify(parsedJson, null, 2);
+                    statusEl.textContent = 'Presentation generated successfully!';
+                    statusEl.style.color = '#10b981';
+                } catch(e) {
+                     throw new Error('AI returned invalid JSON format.');
+                }
             } catch (error) {
                 statusEl.textContent = `AI Error: ${error.message}`;
                 statusEl.style.color = '#ef4444';
