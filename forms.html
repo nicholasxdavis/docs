@@ -50,9 +50,7 @@
         .hidden { display: none; }
         .custom-textarea { background: #242628; border: 1px solid #3a3c3e; transition: all 0.3s ease; }
         .custom-textarea:focus { border-color: #50b1f7; box-shadow: 0 0 0 2px rgba(6, 178, 252, 0.2); }
-        .toggle-checkbox:checked { right: 0; border-color: #06b2fc; }
-        .toggle-checkbox:checked + .toggle-label { background-color: #06b2fc; }
-        .loader { width: 50px; aspect-ratio: 1; box-shadow: 0 0 0 3px #06b2fc inset; border-radius: 50%; position: relative; animation: l6 1.5s linear infinite; }
+        .loader { width: 50px; aspect-ratio: 1; box-shadow: 0 0 0 3px #8b5cf6 inset; border-radius: 50%; position: relative; animation: l6 1.5s linear infinite; }
         .loader:before { content: ""; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); box-shadow: inherit; width: 25px; aspect-ratio: 1; border-radius: 50%; }
         @keyframes l6 { to { transform: rotate(360deg); } }
     </style>
@@ -61,57 +59,56 @@
     <div class="container mx-auto px-4 md:px-8 py-6">
         <header class="flex justify-between items-center mb-12 animate-fade-up">
             <div class="flex items-center gap-3">
-                <img src="https://nicholasxdavis.github.io/docs/img/logo.png" alt="Orbit Logo" class="w-20 h-100%">
+                 <img src="https://nicholasxdavis.github.io/docs/img/logo.png" alt="Orbit Logo" class="w-20 h-100%">
             </div>
             <a href="./index.html" class="bg-dark-secondary text-dark-light font-medium py-2 px-4 rounded-lg hover:bg-dark-tertiary transition-all flex items-center gap-2 btn-micro">
                 &larr; Back to Dashboard
             </a>
         </header>
 
-        <div id="app-content" class="max-w-4xl mx-auto hidden animate-fade-up" style="animation-delay: 0.1s">
+        <div id="app-content" class="max-w-6xl mx-auto hidden animate-fade-up grid grid-cols-1 lg:grid-cols-2 gap-8" style="animation-delay: 0.1s">
+            <!-- Left Panel: Form Editor -->
             <div class="glassmorphism p-8 rounded-2xl shadow-xl">
-                <div id="forms-generator">
+                <div id="form-editor">
                     <div class="mb-8">
-                        <h2 class="text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-orange-400">Create New Form</h2>
-                        <p class="text-dark-tertiary">Use the form below to generate a new Google Form with AI.</p>
+                        <h2 class="text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-indigo-400">Create New Form</h2>
+                        <p class="text-dark-tertiary">Design your Google Form using the fields below.</p>
                     </div>
                     
                     <div class="space-y-6">
                         <div>
                             <label for="form-title" class="block text-sm font-medium text-dark-tertiary mb-2">Form Title</label>
-                            <input type="text" id="form-title" placeholder="e.g., Customer Feedback Survey" class="w-full p-3 bg-dark-secondary border border-dark-tertiary rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06b2fc] text-dark-light placeholder-dark-tertiary">
+                            <input type="text" id="form-title" placeholder="e.g., Customer Feedback Survey" class="w-full p-3 bg-dark-secondary border border-dark-tertiary rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8b5cf6] text-dark-light placeholder-dark-tertiary">
                         </div>
                         <div>
-                            <div class="flex justify-between items-center mb-2">
-                                <label for="form-content" class="block text-sm font-medium text-dark-tertiary">Questions</label>
-                                <div class="flex items-center space-x-2">
-                                    <span class="text-xs text-dark-tertiary">AI Formatting</span>
-                                    <div class="relative inline-block w-10 mr-2 align-middle select-none">
-                                        <input type="checkbox" id="ai-format-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
-                                        <label for="ai-format-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
-                                    </div>
-                                </div>
-                            </div>
-                            <textarea id="form-content" rows="12" placeholder="Enter your form questions here, or describe what you need and use the AI to generate it..." class="w-full p-4 custom-textarea rounded-lg focus:outline-none text-dark-light placeholder-dark-tertiary resize-none"></textarea>
+                            <label for="form-description" class="block text-sm font-medium text-dark-tertiary mb-2">Form Description</label>
+                            <textarea id="form-description" rows="3" placeholder="Briefly describe the purpose of this form." class="w-full p-3 custom-textarea rounded-lg focus:outline-none text-dark-light placeholder-dark-tertiary resize-none"></textarea>
+                        </div>
+                        <div>
+                            <label for="form-questions" class="block text-sm font-medium text-dark-tertiary mb-2">Questions (JSON)</label>
+                            <textarea id="form-questions" rows="12" placeholder='[{"title": "Your Name", "type": "TEXT"}, ...]' class="w-full p-4 custom-textarea rounded-lg focus:outline-none text-dark-light placeholder-dark-tertiary font-mono text-sm"></textarea>
                         </div>
                     </div>
 
                     <div class="flex flex-col sm:flex-row gap-4 mt-8">
-                        <button id="ai-enhance-btn" class="flex-1 bg-[#06b2fc] text-white font-semibold py-3 px-6 rounded-lg hover:bg-[#0595d8] transition-all transform btn-micro flex items-center justify-center gap-2">
+                        <button id="ai-generate-btn" class="flex-1 bg-[#06b2fc] text-white font-semibold py-3 px-6 rounded-lg hover:bg-[#0595d8] transition-all transform btn-micro flex items-center justify-center gap-2">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path></svg>
                             <span>Generate with AI</span>
                         </button>
-                        <button id="generate-form-btn" class="flex-1 bg-gradient-to-r from-yellow-400 to-orange-300 text-white font-semibold py-3 px-6 rounded-lg hover:from-yellow-300 hover:to-orange-200 transition-all transform btn-micro flex items-center justify-center gap-2">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                        <button id="generate-form-btn" class="flex-1 bg-gradient-to-r from-purple-400 to-indigo-300 text-white font-semibold py-3 px-6 rounded-lg hover:from-purple-300 hover:to-indigo-200 transition-all transform btn-micro flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd"></path></svg>
                             <span>Create Google Form</span>
                         </button>
                     </div>
-                    <p id="generator-status" class="mt-4 text-center h-5 text-sm"></p>
-                    <div id="reconnect-google" class="hidden mt-4 text-center">
-                        <button id="reconnectGoogleBtn" class="text-[#06b2fc] hover:underline">
-                            Reconnect Google Account
-                        </button>
-                    </div>
+                     <p id="generator-status" class="mt-4 text-center h-5 text-sm"></p>
+                </div>
+            </div>
+            
+            <!-- Right Panel: Form Preview -->
+            <div class="glassmorphism p-8 rounded-2xl shadow-xl">
+                <h2 class="text-2xl font-bold mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-indigo-400">Live Preview</h2>
+                <div id="form-preview" class="bg-dark-secondary p-6 rounded-lg h-[600px] overflow-y-auto border border-dark-tertiary/20">
+                    <!-- Preview will be rendered here -->
                 </div>
             </div>
         </div>
@@ -139,13 +136,12 @@
     });
 
     const GOOGLE_API_KEY = deobfuscate('A*I*z*a*S*y*A*U*I*v*4*H*E*M*u*f*F*0*x*5*1*e*Z*q*L*p*e*o*R*t*J*X*8*W*n*r*n*i*o');
-    const DISCOVERY_DOC = 'https://forms.googleapis.com/$discovery/rest?version=v1';
+    const DISCOVERY_DOCS = ["https://forms.googleapis.com/$discovery/rest?version=v1"];
 
     const OPENROUTER_API_KEY = deobfuscate('s*k*-*o*r*-*v*1*-*b*2*1*9*8*5*d*9*f*5*7*4*2*0*1*8*b*8*d*8*e*9*d*8*e*3*6*f*f*f*9*c*1*5*b*8*3*1*6*2*1*8*8*9*1*c*a*5*e*3*2*6*a*3*a*2*f*d*5*4*b*a*4*7');
     const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
     const DEFAULT_MODEL = 'moonshotai/kimi-k2:free';
     
-    // Global variable to hold user data
     let currentUser = null;
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -153,8 +149,9 @@
         const loadingSkeleton = document.getElementById('loading-skeleton');
         const statusEl = document.getElementById('generator-status');
         const generateFormBtn = document.getElementById('generate-form-btn');
-        const aiEnhanceBtn = document.getElementById('ai-enhance-btn');
-        const reconnectGoogleBtn = document.getElementById('reconnectGoogleBtn');
+        const aiGenerateBtn = document.getElementById('ai-generate-btn');
+        const formPreview = document.getElementById('form-preview');
+        const formQuestionsInput = document.getElementById('form-questions');
 
         const showLoading = (show) => {
             loadingSkeleton.classList.toggle('hidden', !show);
@@ -169,7 +166,6 @@
             try {
                 const response = await fetch(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}`);
                 if (!response.ok) return false;
-                
                 const data = await response.json();
                 return !data.error && data.expires_in > 0;
             } catch {
@@ -184,20 +180,14 @@
                     .select('access_token, expires_at')
                     .eq('user_id', userId)
                     .single();
-
                 if (error) throw error;
                 if (!data) return null;
-                
                 const now = new Date();
                 const expiresAt = new Date(data.expires_at);
                 if (expiresAt <= now) {
-                    await supabase
-                        .from('user_google_tokens')
-                        .delete()
-                        .eq('user_id', userId);
+                    await supabase.from('user_google_tokens').delete().eq('user_id', userId);
                     return null;
                 }
-                
                 return data;
             } catch (error) {
                 console.error('Supabase query error:', error);
@@ -212,7 +202,6 @@
                 if (sessionError || !session) {
                     throw new Error('No active session. Please login first.');
                 }
-                
                 currentUser = session.user;
 
                 const tokenData = await getGoogleToken(currentUser.id);
@@ -228,7 +217,7 @@
                 await new Promise((resolve) => gapi.load('client', resolve));
                 await gapi.client.init({
                     apiKey: GOOGLE_API_KEY,
-                    discoveryDocs: [DISCOVERY_DOC],
+                    discoveryDocs: DISCOVERY_DOCS,
                 });
 
                 gapi.client.setToken({
@@ -237,7 +226,7 @@
                 });
 
                 appContent.classList.remove('hidden');
-
+                updateFormPreview();
             } catch (error) {
                 console.error('Initialization error:', error);
                 statusEl.textContent = error.message;
@@ -252,12 +241,57 @@
             }
         }
 
+        function updateFormPreview() {
+            const title = document.getElementById('form-title').value || "Untitled Form";
+            const description = document.getElementById('form-description').value || "Form description";
+            let questions = [];
+            try {
+                questions = JSON.parse(formQuestionsInput.value);
+            } catch (e) {
+                // Ignore parsing errors for live preview
+            }
+
+            let previewHtml = `<h1 class="text-2xl font-bold mb-2">${title}</h1><p class="text-dark-tertiary mb-6">${description}</p>`;
+            if (Array.isArray(questions)) {
+                questions.forEach(q => {
+                    previewHtml += `<div class="mb-4"><label class="block text-dark-light font-medium mb-2">${q.title || 'Untitled Question'}</label>`;
+                    switch (q.type) {
+                        case 'TEXT':
+                            previewHtml += `<input type="text" class="w-full p-2 bg-dark-primary rounded-md border border-dark-tertiary/50" disabled>`;
+                            break;
+                        case 'MULTIPLE_CHOICE':
+                            q.options?.forEach(opt => {
+                                previewHtml += `<div class="flex items-center mb-1"><input type="radio" disabled class="mr-2"><label>${opt}</label></div>`;
+                            });
+                            break;
+                        case 'CHECKBOX':
+                             q.options?.forEach(opt => {
+                                previewHtml += `<div class="flex items-center mb-1"><input type="checkbox" disabled class="mr-2"><label>${opt}</label></div>`;
+                            });
+                            break;
+                        default:
+                             previewHtml += `<input type="text" class="w-full p-2 bg-dark-primary rounded-md border border-dark-tertiary/50" disabled>`;
+                    }
+                    previewHtml += `</div>`;
+                });
+            }
+            formPreview.innerHTML = previewHtml;
+        }
+        
         async function generateForm() {
             const title = document.getElementById('form-title').value.trim();
-            const content = document.getElementById('form-content').value.trim();
-
-            if (!title || !content) {
-                statusEl.textContent = 'Please provide a title and content.';
+            const description = document.getElementById('form-description').value.trim();
+            let questions = [];
+            
+            try {
+                questions = JSON.parse(formQuestionsInput.value);
+                if (!title || !Array.isArray(questions) || questions.length === 0) {
+                     statusEl.textContent = 'Please provide a title and at least one question.';
+                     statusEl.style.color = '#ef4444';
+                     return;
+                }
+            } catch (e) {
+                statusEl.textContent = 'Invalid JSON format for questions.';
                 statusEl.style.color = '#ef4444';
                 return;
             }
@@ -268,174 +302,104 @@
             }
             
             statusEl.textContent = 'Checking usage limits...';
-            statusEl.style.color = '#f59e0b';
+            statusEl.style.color = '#06b2fc';
             showLoading(true);
 
             try {
-                // First, check user's current usage and plan
-                const { data: usage, error: usageError } = await supabase
+                let { data: usage, error: usageError } = await supabase
                     .from('user_usage')
-                    .select('form_count, is_pro')
+                    .select('document_count, is_pro') // FIX: Changed 'form_count' to 'document_count'
                     .eq('user_id', currentUser.id)
-                    .single();
+                    .maybeSingle();
 
-                if (usageError) throw new Error('Could not verify user usage.');
-                
-                const MAX_FREE_FORMS = 15; // Free tier limit for forms
-                if (!usage.is_pro && usage.form_count >= MAX_FREE_FORMS) {
-                     statusEl.innerHTML = `You've reached the free limit of ${MAX_FREE_FORMS} forms. <a href="./index.html" class="text-[#50b1f7] hover:underline">Upgrade to Pro</a> for unlimited creation.`;
+                if (usageError) throw usageError;
+
+                if (!usage) {
+                    const { data: newUsage, error: insertError } = await supabase
+                        .from('user_usage')
+                        .insert({ user_id: currentUser.id, document_count: 0, is_pro: false })
+                        .select('document_count, is_pro')
+                        .single();
+                    if (insertError) throw new Error('Could not initialize user usage.');
+                    usage = newUsage;
+                }
+
+                const docCount = usage.document_count || 0;
+                const MAX_FREE_DOCS = 20;
+                if (!usage.is_pro && docCount >= MAX_FREE_DOCS) {
+                     statusEl.innerHTML = `You've reached the free limit of ${MAX_FREE_DOCS} documents. <a href="./index.html" class="text-[#50b1f7] hover:underline">Upgrade to Pro</a> for unlimited creation.`;
                      statusEl.style.color = '#f59e0b';
                      showLoading(false);
                      return;
                 }
 
-                // If usage is okay, proceed to create the form
                 statusEl.textContent = 'Creating form...';
-                const response = await gapi.client.forms.forms.create({
-                    title: title
-                });
-                const formId = response.result.formId;
+                const form = {
+                    info: { title, documentTitle: title }
+                };
+                if (description) {
+                    form.info.description = description;
+                }
 
-                // Increment the form count in Supabase
-                const { error: rpcError } = await supabase.rpc('increment_form_count', {
+                const createResponse = await gapi.client.forms.forms.create({ resource: form });
+                const formId = createResponse.result.formId;
+
+                const { error: rpcError } = await supabase.rpc('increment_doc_count', { // FIX: Changed RPC call
                     p_user_id: currentUser.id
                 });
-                
                 if (rpcError) {
                     console.error('Critical: Google Form was created but usage count failed to update:', rpcError.message);
                 }
 
-                // Process the content into form questions
-                let requests = [];
-                let questionCount = 0;
-
-                // Try to parse as JSON (for structured data)
-                try {
-                    const data = JSON.parse(content);
-                    if (Array.isArray(data)) {
-                        // Create questions for each item in the array
-                        data.forEach((questionData, index) => {
-                            const questionType = questionData.type || 'text';
-                            const questionTitle = questionData.question || `Question ${index + 1}`;
-                            const options = questionData.options || [];
-                            
-                            requests.push({
-                                createItem: {
-                                    item: {
-                                        title: questionTitle,
-                                        questionItem: {
-                                            question: {
-                                                required: questionData.required || false,
-                                                choiceQuestion: questionType === 'multiple_choice' ? {
-                                                    type: 'RADIO',
-                                                    options: options.map(opt => ({ value: opt }))
-                                                } : null,
-                                                textQuestion: questionType === 'text' ? {
-                                                    paragraph: false
-                                                } : null,
-                                                scaleQuestion: questionType === 'scale' ? {
-                                                    low: questionData.low || 1,
-                                                    high: questionData.high || 5,
-                                                    lowLabel: questionData.lowLabel || '',
-                                                    highLabel: questionData.highLabel || ''
-                                                } : null
-                                            }
-                                        }
-                                    },
-                                    location: {
-                                        index: index
+                const requests = questions.map((q, index) => ({
+                    createItem: {
+                        item: {
+                            title: q.title,
+                            questionItem: {
+                                question: {
+                                    required: q.required || false,
+                                    choiceQuestion: {
+                                        type: q.type || 'TEXT',
+                                        options: q.options?.map(opt => ({ value: opt })) || []
                                     }
                                 }
-                            });
-                            questionCount++;
-                        });
+                            }
+                        },
+                        location: { index }
                     }
-                } catch (e) {
-                    // If not JSON, treat as plain text with question separators
-                    const questions = content.split('\n\n');
-                    
-                    questions.forEach((questionText, index) => {
-                        requests.push({
-                            createItem: {
-                                item: {
-                                    title: questionText,
-                                    questionItem: {
-                                        question: {
-                                            required: false,
-                                            textQuestion: {
-                                                paragraph: false
-                                            }
-                                        }
-                                    }
-                                },
-                                location: {
-                                    index: index
-                                }
-                            }
-                        });
-                        questionCount++;
+                }));
+
+                if (requests.length > 0) {
+                    await gapi.client.forms.forms.batchUpdate({
+                        formId,
+                        resource: { requests }
                     });
                 }
 
-                // If no questions were created (invalid format), create one default question
-                if (questionCount === 0) {
-                    requests.push({
-                        createItem: {
-                            item: {
-                                title: "What is your feedback?",
-                                questionItem: {
-                                    question: {
-                                        required: false,
-                                        textQuestion: {
-                                            paragraph: false
-                                        }
-                                    }
-                                }
-                            },
-                            location: {
-                                index: 0
-                            }
-                        }
-                    });
-                }
-
-                // Batch update the form with our requests
-                await gapi.client.forms.forms.batchUpdate({
-                    formId: formId,
-                    requests: requests
-                });
-
-                statusEl.innerHTML = `Form created with ${questionCount || 1} questions! <a href="https://docs.google.com/forms/d/${formId}/edit" target="_blank" class="text-[#50b1f7] hover:underline">Open Form</a>`;
+                statusEl.innerHTML = `Form created! <a href="${createResponse.result.responderUri}" target="_blank" class="text-[#8b5cf6] hover:underline">Open Form</a>`;
                 statusEl.style.color = '#10b981';
 
             } catch (err) {
                 const errorMsg = err?.result?.error?.message || err.message;
-                statusEl.textContent = errorMsg.includes('authentication') ?
-                    'Authentication expired. Please refresh and sign in again.' :
-                    `Error: ${errorMsg}`;
+                statusEl.textContent = errorMsg.includes('authentication') ? 'Authentication expired. Please refresh and sign in again.' : `Error: ${errorMsg}`;
                 statusEl.style.color = '#ef4444';
                 console.error(err);
             } finally {
                 showLoading(false);
             }
         }
-
-        async function enhanceWithAI() {
-            const contentEl = document.getElementById('form-content');
-            const originalContent = contentEl.value.trim();
-
-            if (!originalContent) {
-                statusEl.textContent = 'Please enter some content to enhance.';
+        
+        async function generateQuestionsWithAI() {
+            const description = document.getElementById('form-description').value.trim();
+            if (!description) {
+                statusEl.textContent = 'Please provide a form description to generate questions.';
                 statusEl.style.color = '#ef4444';
                 return;
             }
 
-            const shouldFormat = document.getElementById('ai-format-toggle').checked;
-            const prompt = shouldFormat
-                ? `You are a professional form builder. Take the following description and: 1) Generate a well-structured form with appropriate questions, 2) Include different question types (multiple choice, text, scale) where appropriate, 3) Format as a JSON array where each object represents a question with properties like "question", "type", "options" (for multiple choice), "required", etc. Return only the JSON data without any additional commentary. Description: "${originalContent}"`
-                : `You are a helpful form builder. Take the following description and generate a form structure with appropriate questions. Return the data as a JSON array where each object represents a question with properties like "question", "type", etc. Description: "${originalContent}"`;
+            const prompt = `Based on the form description "${description}", generate a list of 5-7 relevant questions. Return a JSON array of objects. Each object should have "title" (string), "type" (string, e.g., 'TEXT', 'MULTIPLE_CHOICE', 'CHECKBOX'), and optionally "options" (an array of strings for choice types).`;
 
-            statusEl.textContent = 'AI is generating your form...';
+            statusEl.textContent = 'AI is generating questions...';
             statusEl.style.color = '#8b5cf6';
             showLoading(true);
 
@@ -460,12 +424,29 @@
                 }
 
                 const result = await response.json();
-                const enhancedText = result.choices?.[0]?.message?.content;
-
-                if (!enhancedText) throw new Error('No content returned from AI.');
-
-                contentEl.value = enhancedText;
-                statusEl.textContent = 'Form generated successfully!';
+                const generatedQuestions = result.choices?.[0]?.message?.content;
+                if (!generatedQuestions) throw new Error('No content returned from AI.');
+                
+                let parsedQuestions;
+                try {
+                    const jsonMatch = generatedQuestions.match(/\[[\s\S]*\]/);
+                    if (jsonMatch) {
+                        parsedQuestions = JSON.parse(jsonMatch[0]);
+                    } else {
+                        throw new Error();
+                    }
+                } catch (e) {
+                     try {
+                        const cleaned = generatedQuestions.replace(/^```json|```$/g, '').trim();
+                        parsedQuestions = JSON.parse(cleaned);
+                    } catch (e) {
+                        throw new Error('AI returned invalid JSON format');
+                    }
+                }
+                
+                formQuestionsInput.value = JSON.stringify(parsedQuestions, null, 2);
+                updateFormPreview();
+                statusEl.textContent = 'Questions generated successfully!';
                 statusEl.style.color = '#10b981';
             } catch (error) {
                 statusEl.textContent = `AI Error: ${error.message}`;
@@ -476,16 +457,18 @@
             }
         }
 
-        reconnectGoogleBtn?.addEventListener('click', () => {
-            window.location.href = './index.html';
-        });
-
+        // Initialize the app
         initializeApp();
 
+        // Event listeners
         generateFormBtn.addEventListener('click', generateForm);
-        aiEnhanceBtn.addEventListener('click', enhanceWithAI);
+        aiGenerateBtn.addEventListener('click', generateQuestionsWithAI);
+        
+        // Update preview when data changes
+        formQuestionsInput.addEventListener('input', updateFormPreview);
+        document.getElementById('form-title').addEventListener('input', updateFormPreview);
+        document.getElementById('form-description').addEventListener('input', updateFormPreview);
     });
 </script>
-
 </body>
 </html>
