@@ -462,42 +462,27 @@
         }
 
         async loadUsage() {
-    try {
-        const { data, error } = await supabase
-            .from('user_usage')
-            .select('document_count, is_pro')
-            .eq('user_id', this.user.id)
-            .single();
-        
-        if (error) throw error;
-        
-        this.documentCount = data?.document_count || 0;
-        this.hasActiveSubscription = data?.is_pro || false;
-        this.userPlan = this.hasActiveSubscription ? 'pro' : 'free';
-        
-        // Update usage bar
-        const usagePercentage = this.hasActiveSubscription ? 100 : 
-            Math.min(100, (this.documentCount / 20) * 100); // Changed from this.maxDocuments to 20
-        document.getElementById('usageBar').style.width = `${usagePercentage}%`;
-    } catch (error) {
-        console.error('Error loading usage:', error);
-        // Initialize usage if record doesn't exist
-        const { error: insertError } = await supabase
-            .from('user_usage')
-            .insert([{ 
-                user_id: this.user.id,
-                document_count: 0,
-                is_pro: false 
-            }]);
-        
-        if (insertError) console.error('Error initializing usage:', insertError);
-        else {
-            this.documentCount = 0;
-            this.hasActiveSubscription = false;
-            document.getElementById('usageBar').style.width = '0%';
+            try {
+                const { data, error } = await supabase
+                    .from('user_usage')
+                    .select('document_count, is_pro')
+                    .eq('user_id', this.user.id)
+                    .single();
+                
+                if (error) throw error;
+                
+                this.documentCount = data?.document_count || 0;
+                this.hasActiveSubscription = data?.is_pro || false;
+                this.userPlan = this.hasActiveSubscription ? 'pro' : 'free';
+                
+                // Update usage bar
+                const usagePercentage = this.hasActiveSubscription ? 100 : 
+                    Math.min(100, (this.documentCount / this.maxDocuments) * 100);
+                document.getElementById('usageBar').style.width = `${usagePercentage}%`;
+            } catch (error) {
+                console.error('Error loading usage:', error);
+            }
         }
-    }
-}
 
         updateUI() {
             const isLoggedIn = !!this.user;
