@@ -288,39 +288,32 @@
         const response = await gapi.client.docs.documents.create({ title: title });
         const docId = response.result.documentId;
 
-        try {
-            await gapi.client.docs.documents.batchUpdate({
-                documentId: docId,
-                requests: [{
-                    insertText: {
-                        text: content,
-                        location: { index: 1 }
-                    }
-                }]
+        // Insert content into the document
+        await gapi.client.docs.documents.batchUpdate({
+            documentId: docId,
+            requests: [{
+                insertText: {
+                    text: content,
+                    location: { index: 1 }
+                }
+            }]
+        });
+
+        // Increment the document count - using upsert to handle cases where record doesn't exist
+        const { error: updateError } = await supabase
+            .from('user_usage')
+            .upsert({
+                user_id: session.user.id,
+                document_count: (usageData?.document_count || 0) + 1,
+                updated_at: new Date().toISOString()
+            }, {
+                onConflict: 'user_id'
             });
 
-            // Increment the document count
-            const { data: updateData, error: updateError } = await supabase
-                .from('user_usage')
-                .update({ 
-                    document_count: usageData.document_count + 1,
-                    updated_at: new Date().toISOString()
-                })
-                .eq('user_id', session.user.id)
-                .select(); // Add this to get the updated record
-
-            if (updateError) throw updateError;
-
-            // Verify the update
-            console.log('Updated document count:', updateData);
-            
-            statusEl.innerHTML = `Document created! <a href="https://docs.google.com/document/d/${docId}/edit" target="_blank" class="text-[#50b1f7] hover:underline">Open Document</a>`;
-            statusEl.style.color = '#10b981';
-        } catch (updateError) {
-            statusEl.innerHTML = `Document created but content couldn't be added. <a href="https://docs.google.com/document/d/${docId}/edit" target="_blank" class="text-[#50b1f7] hover:underline">Open Document</a>`;
-            statusEl.style.color = '#f59e0b';
-            console.error('Content update failed:', updateError);
-        }
+        if (updateError) throw updateError;
+        
+        statusEl.innerHTML = `Document created! <a href="https://docs.google.com/document/d/${docId}/edit" target="_blank" class="text-[#50b1f7] hover:underline">Open Document</a>`;
+        statusEl.style.color = '#10b981';
     } catch (err) {
         const errorMsg = err?.result?.error?.message || err.message;
         statusEl.textContent = errorMsg.includes('authentication') ?
