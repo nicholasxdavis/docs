@@ -313,7 +313,7 @@
                 // Try to parse as JSON (for structured data)
                 try {
                     const data = JSON.parse(content);
-                    if (Array.isArray(data)) {
+                    if (Array.isArray(data) && data.length > 0) {
                         // Handle array of objects (convert to rows and columns)
                         const headers = Object.keys(data[0]);
                         const values = data.map(obj => headers.map(header => obj[header]));
@@ -340,9 +340,9 @@
                                     ...values.map(row => ({
                                         values: row.map(cell => ({
                                             userEnteredValue: typeof cell === 'number' ? 
-                                                { numberValue: cell } : { stringValue: cell }
+                                                { numberValue: cell } : { stringValue: String(cell) }
                                         }))
-                                    })
+                                    }))
                                 ],
                                 fields: 'userEnteredValue,userEnteredFormat'
                             }
@@ -353,60 +353,68 @@
                     const lines = content.split('\n');
                     const rows = lines.map(line => line.split(',').map(cell => cell.trim()));
                     
+                    if (rows.length > 0) {
+                        requests.push({
+                            updateCells: {
+                                range: {
+                                    sheetId: 0,
+                                    startRowIndex: 0,
+                                    endRowIndex: rows.length,
+                                    startColumnIndex: 0,
+                                    // FIX: More robust way to get column count
+                                    endColumnIndex: (rows[0] && rows[0].length) ? rows[0].length : 1
+                                },
+                                rows: rows.map(row => ({
+                                    values: row.map(cell => ({
+                                        userEnteredValue: { stringValue: cell }
+                                    }))
+                                })),
+                                fields: 'userEnteredValue'
+                            }
+                        });
+                    }
+                }
+
+                // Format the header row if there are requests
+                if (requests.length > 0) {
                     requests.push({
-                        updateCells: {
+                        repeatCell: {
                             range: {
                                 sheetId: 0,
                                 startRowIndex: 0,
-                                endRowIndex: rows.length,
-                                startColumnIndex: 0,
-                                endColumnIndex: rows[0]?.length || 1
+                                endRowIndex: 1
                             },
-                            rows: rows.map(row => ({
-                                values: row.map(cell => ({
-                                    userEnteredValue: { stringValue: cell }
-                                }))
-                            })),
-                            fields: 'userEnteredValue'
+                            cell: {
+                                userEnteredFormat: {
+                                    textFormat: { bold: true },
+                                    backgroundColor: { red: 0.2, green: 0.6, blue: 0.8 }
+                                }
+                            },
+                            fields: 'userEnteredFormat(textFormat,backgroundColor)'
+                        }
+                    });
+
+                    // Auto-resize columns
+                    requests.push({
+                        autoResizeDimensions: {
+                            dimensions: {
+                                sheetId: 0,
+                                dimension: 'COLUMNS',
+                                startIndex: 0,
+                                endIndex: 20 // A reasonable default max
+                            }
                         }
                     });
                 }
 
-                // Format the header row
-                requests.push({
-                    repeatCell: {
-                        range: {
-                            sheetId: 0,
-                            startRowIndex: 0,
-                            endRowIndex: 1
-                        },
-                        cell: {
-                            userEnteredFormat: {
-                                textFormat: { bold: true },
-                                backgroundColor: { red: 0.2, green: 0.6, blue: 0.8 }
-                            }
-                        },
-                        fields: 'userEnteredFormat'
-                    }
-                });
 
-                // Auto-resize columns
-                requests.push({
-                    autoResizeDimensions: {
-                        dimensions: {
-                            sheetId: 0,
-                            dimension: 'COLUMNS',
-                            startIndex: 0,
-                            endIndex: 20
-                        }
-                    }
-                });
-
-                // Batch update the sheet with our requests
-                await gapi.client.sheets.spreadsheets.batchUpdate({
-                    spreadsheetId: sheetId,
-                    requests: requests
-                });
+                // Batch update the sheet with our requests if there are any
+                if (requests.length > 0) {
+                    await gapi.client.sheets.spreadsheets.batchUpdate({
+                        spreadsheetId: sheetId,
+                        requests: requests
+                    });
+                }
 
                 statusEl.innerHTML = `Spreadsheet created! <a href="https://docs.google.com/spreadsheets/d/${sheetId}/edit" target="_blank" class="text-[#50b1f7] hover:underline">Open Spreadsheet</a>`;
                 statusEl.style.color = '#10b981';
