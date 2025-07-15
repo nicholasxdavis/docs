@@ -433,33 +433,41 @@
         }
 
         async handleUpgrade() {
-            if (this.paymentLoading) return;
-            this.paymentLoading = true;
-            
-            try {
-                const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-                    body: JSON.stringify({
-                        user_id: this.user.id,
-                        email: this.user.email
-                    })
-                });
-                
-                if (error) throw error;
-                
-                const result = await stripe.redirectToCheckout({
-                    sessionId: data.sessionId
-                });
-                
-                if (result.error) {
-                    throw result.error;
-                }
-            } catch (error) {
-                console.error('Payment error:', error);
-                alert('Payment failed: ' + error.message);
-            } finally {
-                this.paymentLoading = false;
-            }
+    if (this.paymentLoading) return;
+    this.paymentLoading = true;
+    
+    try {
+        const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+            body: JSON.stringify({
+                user_id: this.user.id,
+                email: this.user.email
+            })
+        });
+        
+        if (error) {
+            console.error('Supabase function error:', error);
+            alert('Failed to start payment process. Please try again later.');
+            return;
         }
+        
+        if (!data?.sessionId) {
+            throw new Error('Invalid response from server');
+        }
+        
+        const result = await stripe.redirectToCheckout({
+            sessionId: data.sessionId
+        });
+        
+        if (result.error) {
+            throw result.error;
+        }
+    } catch (error) {
+        console.error('Payment error:', error);
+        alert(`Payment failed: ${error.message}`);
+    } finally {
+        this.paymentLoading = false;
+    }
+}
 
         async loadUsage() {
     try {
