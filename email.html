@@ -611,18 +611,23 @@
                 part.mimeType === 'text/plain'
             );
             
-            if (textPart) {
+            if (textPart && textPart.body && textPart.body.data) {
                 return decodeBase64(textPart.body.data);
             }
         }
         
         // Fallback to simple body
-        return payload.body ? decodeBase64(payload.body.data) : '';
+        return payload.body && payload.body.data ? decodeBase64(payload.body.data) : '';
     }
 
     function decodeBase64(data) {
         if (!data) return '';
-        return atob(data.replace(/-/g, '+').replace(/_/g, '/'));
+        try {
+            return atob(data.replace(/-/g, '+').replace(/_/g, '/'));
+        } catch (e) {
+            console.error('Base64 decode error:', e);
+            return ''; // Return empty string if decoding fails
+        }
     }
 
     async function getRecentEmails(filter = 'all') {
@@ -826,43 +831,22 @@
             let prompt = '';
             let title = '';
             
+            // FIX: Corrected the switch statement structure.
             switch(mode) {
                 case 'summary':
                     title = `Summary of Last ${dayText}`;
-                    prompt = `Analyze these emails from the last ${days} day(s) and provide a concise summary. Focus on:
-Key topics and themes
+                    prompt = `Analyze these emails from the last ${dayText} and provide a concise summary. Focus on:\n- Key topics and themes\n- Important senders\n- Urgent matters\n- Overall sentiment\n\nFormat as bullet points with clear headings. Here are sample emails:\n\n${emailSamples}`;
+                    break;
+                case 'trends':
+                    title = `Trends in Last ${dayText}`;
+                    prompt = `Identify trends and patterns in these emails from the last ${dayText}. Look for:\n- Frequency of communication\n- Common topics\n- Time patterns\n- Relationship dynamics\n\nProvide actionable insights. Here are sample emails:\n\n${emailSamples}`;
+                    break;
+                case 'actions':
+                    title = `Action Items from Last ${dayText}`;
+                    prompt = `Extract clear action items from these emails from the last ${dayText}. Include:\n- Specific tasks\n- Deadlines\n- Required follow-ups\n- Priority level\n\nFormat as a numbered list. Here are sample emails:\n\n${emailSamples}`;
+                    break;
+            }
 
-Important senders
-
-Urgent matters
-
-Overall sentiment
-
-Format as bullet points with clear headings. Here are sample emails:\n\n${emailSamples}; break; case 'trends': title = Trends in Last ${dayText}; prompt = Identify trends and patterns in these emails from the last ${days} day(s). Look for:
-
-Frequency of communication
-
-Common topics
-
-Time patterns
-
-Relationship dynamics
-
-Provide actionable insights. Here are sample emails:\n\n${emailSamples}; break; case 'actions': title = Action Items from Last ${dayText}; prompt = Extract clear action items from these emails from the last ${days} day(s). Include:
-
-Specific tasks
-
-Deadlines
-
-Required follow-ups
-
-Priority level
-
-Format as a numbered list. Here are sample emails:\n\n${emailSamples}`;
-break;
-}
-
-text
             const response = await fetch(OPENROUTER_API_URL, {
                 method: 'POST',
                 headers: {
@@ -991,23 +975,22 @@ text
         }
 
         const shouldFormat = document.getElementById('ai-format-toggle').checked;
+        
+        // FIX: Corrected the ternary operator and prompts.
         const prompt = shouldFormat
-            ? `You are a professional email assistant. Take the following email content and: 
-Improve clarity and professionalism,
-
-Ensure proper structure with greeting and closing,
-
-Make the tone appropriate for business communication,
-
-Keep it concise.
+            ? `You are a professional email assistant. Take the following email content and:
+- Improve clarity and professionalism
+- Ensure proper structure with greeting and closing
+- Make the tone appropriate for business communication
+- Keep it concise.
 Subject: "${subject}".
 Content: "${originalContent}".
-Return only the enhanced email content without any additional commentary. :You are a helpful email assistant. Take the following email content and improve it, making it more professional and well-structured.
+Return only the enhanced email content without any additional commentary.`
+            : `You are a helpful email assistant. Take the following email content and improve it, making it more professional and well-structured.
 Subject: "${subject}".
 Content: "${originalContent}".
 Return only the enhanced email content without any additional commentary.`;
 
-text
      statusEl.textContent = 'AI is enhancing your email...';
      statusEl.style.color = '#8b5cf6';
      showLoading(true);
