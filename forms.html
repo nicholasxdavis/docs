@@ -308,7 +308,7 @@
             try {
                 let { data: usage, error: usageError } = await supabase
                     .from('user_usage')
-                    .select('document_count, is_pro') // FIX: Changed 'form_count' to 'document_count'
+                    .select('document_count, is_pro')
                     .eq('user_id', currentUser.id)
                     .maybeSingle();
 
@@ -334,24 +334,35 @@
                 }
 
                 statusEl.textContent = 'Creating form...';
+                // FIX: Create form with only the title
                 const form = {
-                    info: { title, documentTitle: title }
+                    info: { title }
                 };
-                if (description) {
-                    form.info.description = description;
-                }
 
                 const createResponse = await gapi.client.forms.forms.create({ resource: form });
                 const formId = createResponse.result.formId;
 
-                const { error: rpcError } = await supabase.rpc('increment_doc_count', { // FIX: Changed RPC call
+                const { error: rpcError } = await supabase.rpc('increment_doc_count', {
                     p_user_id: currentUser.id
                 });
                 if (rpcError) {
                     console.error('Critical: Google Form was created but usage count failed to update:', rpcError.message);
                 }
 
-                const requests = questions.map((q, index) => ({
+                // Prepare batch update requests
+                let requests = [];
+
+                // FIX: Add description update to batch requests
+                if (description) {
+                    requests.push({
+                        updateFormInfo: {
+                            info: { description },
+                            updateMask: 'description'
+                        }
+                    });
+                }
+
+                const questionRequests = questions.map((q, index) => ({
                     createItem: {
                         item: {
                             title: q.title,
@@ -368,6 +379,8 @@
                         location: { index }
                     }
                 }));
+
+                requests = requests.concat(questionRequests);
 
                 if (requests.length > 0) {
                     await gapi.client.forms.forms.batchUpdate({
