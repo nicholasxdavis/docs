@@ -611,25 +611,22 @@ async function loadGoogleToken() {
         const { data, error } = await supabase
             .from('user_google_tokens')
             .select('access_token, expires_at')
-            .eq('user_id', authManager.user.id)
-            .single();
+            .eq('user_id', authManager.user.id);
 
         if (error) {
-            if (error.code === 'PGRST116') {
-                // No token exists yet - expected case
-                return;
-            }
             console.error('Supabase error:', error);
             showErrorToast('Failed to connect to database');
             return;
         }
 
-        if (data && new Date(data.expires_at) > new Date()) {
-            gapi.client.setToken({ access_token: data.access_token });
+        // Check if we got any data and the token isn't expired
+        if (data && data.length > 0 && new Date(data[0].expires_at) > new Date()) {
+            gapi.client.setToken({ access_token: data[0].access_token });
             updateGoogleAuthUI(true);
         } else {
             updateGoogleAuthUI(false);
-            if (data) {
+            // Clean up expired token if it exists
+            if (data && data.length > 0) {
                 await supabase.from('user_google_tokens')
                     .delete()
                     .eq('user_id', authManager.user.id);
