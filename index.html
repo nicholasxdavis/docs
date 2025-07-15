@@ -190,7 +190,6 @@
                             </div>
                             <p class="mt-2 text-sm text-dark-tertiary">Forms</p>
                         </a>
-                        <div class="w-full basis-full h-4"></div>
                         <a href="#" class="service-icon-link text-center no-underline" data-service="email">
                             <div class="service-icon transition-all duration-300 cursor-pointer">
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Gmail_icon_%282020%29.svg/64px-Gmail_icon_%282020%29.svg.png" alt="Gmail" class="h-12 w-12 grayscale opacity-70 hover:opacity-100 hover:grayscale-0" onerror="this.onerror=null; this.src='https://placehold.co/48x48/242628/fcfcfc?text=Gmail';">
@@ -671,12 +670,8 @@
             return;
         }
         
-        if (['sheets', 'slides', 'forms'].includes(service)) {
-            alert(`The ${service.charAt(0).toUpperCase() + service.slice(1)} tool is coming soon!`);
-        } else {
-            authManager.showLoading(true);
-            window.location.href = `./${service}.html`;
-        }
+        authManager.showLoading(true);
+        window.location.href = `./${service}.html`;
     }
 
     async function saveGoogleToken(tokenResponse) {
@@ -789,4 +784,4 @@
     });
 </script>
 </body>
-</ht
+</html>
