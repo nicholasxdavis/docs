@@ -304,15 +304,7 @@
     const GOOGLE_API_KEY_OBFUSCATED = 'A*I*z*a*S*y*A*U*I*v*4*H*E*M*u*f*F*0*x*5*1*e*Z*q*L*p*e*o*R*t*J*X*8*W*n*r*n*i*o';
     const GOOGLE_CLIENT_ID_OBFUSCATED = '4*6*7*1*2*2*3*4*7*1*9*5*-*5*g*g*9*e*i*8*a*h*f*l*e*0*t*t*s*e*6*j*s*l*t*2*k*k*h*i*m*l*k*k*1*.*a*p*p*s*.*g*o*o*g*l*e*u*s*e*r*c*o*n*t*e*n*t*.*c*o*m';
     const DISCOVERY_DOC = 'https://docs.googleapis.com/$discovery/rest?version=v1';
-    // FIX: Added all necessary scopes for all tools
-    const SCOPES = [
-        'https://www.googleapis.com/auth/documents', // Google Docs
-        'https://www.googleapis.com/auth/drive.file', // General file creation
-        'https://www.googleapis.com/auth/spreadsheets', // Google Sheets
-        'https://www.googleapis.com/auth/presentations', // Google Slides
-        'https://www.googleapis.com/auth/forms.body', // Google Forms
-        'https://www.googleapis.com/auth/gmail.send' // Gmail
-    ].join(' ');
+    const SCOPES = 'https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/drive.file';
 
     // --- GLOBAL VARIABLES ---
     let tokenClient;
@@ -646,6 +638,7 @@ function updateGoogleAuthUI(isAuthorized) {
         icon.classList.toggle('grayscale-0', isAuthorized);
     });
 }
+
     function handleServiceClick(service) {
         if (!authManager.user) {
             authManager.toggleAccountPopup(true);
@@ -659,12 +652,9 @@ function updateGoogleAuthUI(isAuthorized) {
             return;
         }
 
-        if (service === 'docs') {
-            authManager.showLoading(true);
-            window.location.href = './docs.html';
-        } else {
-            alert(`The ${service.charAt(0).toUpperCase() + service.slice(1)} tool is coming soon!`);
-        }
+        // Redirect to the appropriate service page
+        authManager.showLoading(true);
+        window.location.href = `./${service}.html`;
     }
 
     async function saveGoogleToken(tokenResponse) {
