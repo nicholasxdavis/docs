@@ -359,19 +359,18 @@
                 }
 
                 const questionRequests = questions.map((q, index) => {
-                    const questionItem = {
-                        title: q.title,
+                    // FIX: Correctly structure the questionItem
+                    const questionItemPayload = {
                         question: {
                             required: q.required || false,
                         },
                     };
 
-                    // FIX: Differentiate question types
                     if (q.type === 'TEXT') {
-                        questionItem.question.textQuestion = {}; // Empty object is sufficient
+                        questionItemPayload.question.textQuestion = {};
                     } else {
-                        questionItem.question.choiceQuestion = {
-                            type: q.type || 'MULTIPLE_CHOICE', // Default to multiple choice if not specified
+                        questionItemPayload.question.choiceQuestion = {
+                            type: q.type || 'MULTIPLE_CHOICE',
                             options: q.options?.map(opt => ({ value: opt })) || [],
                         };
                     }
@@ -380,7 +379,7 @@
                         createItem: {
                             item: {
                                 title: q.title,
-                                questionItem: questionItem
+                                questionItem: questionItemPayload
                             },
                             location: { index }
                         }
