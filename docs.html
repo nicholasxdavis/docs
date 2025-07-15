@@ -180,32 +180,51 @@
         throw new Error('Failed to fetch Google token');
     }
 }
-
-        async function initializeApp() {
+async function validateGoogleToken(accessToken) {
+    try {
+        const response = await fetch(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${accessToken}`);
+        const data = await response.json();
+        return !data.error && data.expires_in > 0;
+    } catch {
+        return false;
+    }
+}
+async function initializeApp() {
     showLoading(true);
     try {
+        // 1. Check session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         if (sessionError || !session) {
             throw new Error('No active session');
         }
 
+        // 2. Get token from Supabase
         const tokenData = await getGoogleToken(session.user.id);
         if (!tokenData || !tokenData.access_token) {
             throw new Error('No Google token found');
         }
 
+        // 3. Check token expiration
         const now = new Date();
         const expiresAt = new Date(tokenData.expires_at);
         if (expiresAt <= now) {
             throw new Error('Google token expired');
         }
 
+        // 4. Initialize Google API
         await new Promise((resolve) => gapi.load('client', resolve));
         await gapi.client.init({
             apiKey: GOOGLE_API_KEY,
             discoveryDocs: [DISCOVERY_DOC],
         });
 
+        // 5. Validate token with Google
+        const isValid = await validateGoogleToken(tokenData.access_token);
+        if (!isValid) {
+            throw new Error('Google token invalid');
+        }
+
+        // 6. Set token for API calls
         gapi.client.setToken({
             access_token: tokenData.access_token,
             token_type: 'Bearer'
@@ -217,7 +236,7 @@
         console.error('Initialization error:', error);
         redirectToDashboard(error.message.includes('session') ?
             'Please login first' :
-            'Google integration error. Please reconnect your Google account.');
+            'Google integration error. Please reconnect your Google account from the dashboard.');
     } finally {
         showLoading(false);
     }
