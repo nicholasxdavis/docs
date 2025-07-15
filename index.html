@@ -166,31 +166,19 @@
                     <h2 class="text-3xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-blue-400">Your Workspace</h2>
                     <p class="mb-8 text-dark-tertiary">Link your Google Account to enable the AI-powered tools.</p>
                     <div id="google-services-icons" class="flex justify-center items-center gap-4 md:gap-8 flex-wrap">
-    <a href="#" class="service-icon-link text-center no-underline" data-service="docs">
-        <div class="service-icon transition-all duration-300 cursor-pointer">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Google_Docs_logo_%282014-2020%29.svg/47px-Google_Docs_logo_%282014-2020%29.svg.png?20220322143607" alt="Google Docs" class="h-12 w-10 grayscale opacity-70 hover:opacity-100 hover:grayscale-0" onerror="this.onerror=null; this.src='https://placehold.co/48x48/242628/fcfcfc?text=Docs';">
-        </div>
-        <p class="mt-2 text-sm text-dark-tertiary">Docs</p>
-    </a>
-    <a href="#" class="service-icon-link text-center no-underline" data-service="sheets">
-        <div class="service-icon transition-all duration-300 cursor-pointer">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Google_Sheets_logo_%282014-2020%29.svg/49px-Google_Sheets_logo_%282014-2020%29.svg.png?20201024100414" alt="Google Sheets" class="h-12 w-10 grayscale opacity-70 hover:opacity-100 hover:grayscale-0" onerror="this.onerror=null; this.src='https://placehold.co/48x48/242628/fcfcfc?text=Sheets';">
-        </div>
-        <p class="mt-2 text-sm text-dark-tertiary">Sheets</p>
-    </a>
-    <a href="#" class="service-icon-link text-center no-underline" data-service="slides">
-        <div class="service-icon transition-all duration-300 cursor-pointer">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Google_Slides_logo_%282014-2020%29.svg/48px-Google_Slides_logo_%282014-2020%29.svg.png?20201024100433" alt="Google Slides" class="h-12 w-10 grayscale opacity-70 hover:opacity-100 hover:grayscale-0" onerror="this.onerror=null; this.src='https://placehold.co/48x48/242628/fcfcfc?text=Slides';">
-        </div>
-        <p class="mt-2 text-sm text-dark-tertiary">Slides</p>
-    </a>
-    <a href="#" class="service-icon-link text-center no-underline" data-service="forms">
-        <div class="service-icon transition-all duration-300 cursor-pointer">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Google_Forms_logo_%282014-2020%29.svg/48px-Google_Forms_logo_%282014-2020%29.svg.png?20201024102621" alt="Google Forms" class="h-12 w-10 grayscale opacity-70 hover:opacity-100 hover:grayscale-0" onerror="this.onerror=null; this.src='https://placehold.co/48x48/242628/fcfcfc?text=Forms';">
-        </div>
-        <p class="mt-2 text-sm text-dark-tertiary">Forms</p>
-    </a>
-</div>
+                        <a href="#" class="service-icon-link text-center no-underline" data-service="docs">
+                            <div class="service-icon transition-all duration-300 cursor-pointer">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Google_Docs_logo_%282014-2020%29.svg/47px-Google_Docs_logo_%282014-2020%29.svg.png?20220322143607" alt="Google Docs" class="h-12 w-10 grayscale opacity-70 hover:opacity-100 hover:grayscale-0" onerror="this.onerror=null; this.src='https://placehold.co/48x48/242628/fcfcfc?text=Docs';">
+                            </div>
+                            <p class="mt-2 text-sm text-dark-tertiary">Docs</p>
+                        </a>
+                        <a href="#" class="service-icon-link text-center no-underline" data-service="email">
+                            <div class="service-icon transition-all duration-300 cursor-pointer">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Gmail_icon_%282020%29.svg/64px-Gmail_icon_%282020%29.svg.png" alt="Gmail" class="h-12 w-12 grayscale opacity-70 hover:opacity-100 hover:grayscale-0" onerror="this.onerror=null; this.src='https://placehold.co/48x48/242628/fcfcfc?text=Gmail';">
+                            </div>
+                            <p class="mt-2 text-sm text-dark-tertiary">Email</p>
+                        </a>
+                    </div>
                 </div>
             </div>
             
@@ -303,8 +291,17 @@
     // --- GOOGLE API CONFIG ---
     const GOOGLE_API_KEY_OBFUSCATED = 'A*I*z*a*S*y*A*U*I*v*4*H*E*M*u*f*F*0*x*5*1*e*Z*q*L*p*e*o*R*t*J*X*8*W*n*r*n*i*o';
     const GOOGLE_CLIENT_ID_OBFUSCATED = '4*6*7*1*2*2*3*4*7*1*9*5*-*5*g*g*9*e*i*8*a*h*f*l*e*0*t*t*s*e*6*j*s*l*t*2*k*k*h*i*m*l*k*k*1*.*a*p*p*s*.*g*o*o*g*l*e*u*s*e*r*c*o*n*t*e*n*t*.*c*o*m';
-    const DISCOVERY_DOC = 'https://docs.googleapis.com/$discovery/rest?version=v1';
-    const SCOPES = 'https://www.googleapis.com/auth/documents https://www.googleapis.com/auth/drive.file';
+    const DISCOVERY_DOCS = [
+        'https://docs.googleapis.com/$discovery/rest?version=v1',
+        'https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest'
+    ];
+    // FIX: Added gmail.readonly scope to allow the dashboard to read emails.
+    const SCOPES = [
+        'https://www.googleapis.com/auth/documents', 
+        'https://www.googleapis.com/auth/drive.file',
+        'https://www.googleapis.com/auth/gmail.send',
+        'https://www.googleapis.com/auth/gmail.readonly' // Added this scope for the dashboard
+    ].join(' ');
 
     // --- GLOBAL VARIABLES ---
     let tokenClient;
@@ -433,79 +430,77 @@
         }
 
         async handleUpgrade() {
-    if (this.paymentLoading) return;
-    this.paymentLoading = true;
-    
-    try {
-        const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-            body: JSON.stringify({
-                user_id: this.user.id,
-                email: this.user.email
-            })
-        });
-        
-        if (error) {
-            console.error('Supabase function error:', error);
-            alert('Failed to start payment process. Please try again later.');
-            return;
+            if (this.paymentLoading) return;
+            this.paymentLoading = true;
+            
+            try {
+                const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+                    body: JSON.stringify({
+                        user_id: this.user.id,
+                        email: this.user.email
+                    })
+                });
+                
+                if (error) {
+                    console.error('Supabase function error:', error);
+                    alert('Failed to start payment process. Please try again later.');
+                    return;
+                }
+                
+                if (!data?.sessionId) {
+                    throw new Error('Invalid response from server');
+                }
+                
+                const result = await stripe.redirectToCheckout({
+                    sessionId: data.sessionId
+                });
+                
+                if (result.error) {
+                    throw result.error;
+                }
+            } catch (error) {
+                console.error('Payment error:', error);
+                alert(`Payment failed: ${error.message}`);
+            } finally {
+                this.paymentLoading = false;
+            }
         }
-        
-        if (!data?.sessionId) {
-            throw new Error('Invalid response from server');
-        }
-        
-        const result = await stripe.redirectToCheckout({
-            sessionId: data.sessionId
-        });
-        
-        if (result.error) {
-            throw result.error;
-        }
-    } catch (error) {
-        console.error('Payment error:', error);
-        alert(`Payment failed: ${error.message}`);
-    } finally {
-        this.paymentLoading = false;
-    }
-}
 
         async loadUsage() {
-    try {
-        const { data, error } = await supabase
-            .from('user_usage')
-            .select('document_count, is_pro')
-            .eq('user_id', this.user.id)
-            .single();
-        
-        if (error) throw error;
-        
-        this.documentCount = data?.document_count || 0;
-        this.hasActiveSubscription = data?.is_pro || false;
-        this.userPlan = this.hasActiveSubscription ? 'pro' : 'free';
-        
-        // Update usage bar
-        const usagePercentage = this.hasActiveSubscription ? 100 : 
-            Math.min(100, (this.documentCount / 20) * 100); // Changed from this.maxDocuments to 20
-        document.getElementById('usageBar').style.width = `${usagePercentage}%`;
-    } catch (error) {
-        console.error('Error loading usage:', error);
-        // Initialize usage if record doesn't exist
-        const { error: insertError } = await supabase
-            .from('user_usage')
-            .insert([{ 
-                user_id: this.user.id,
-                document_count: 0,
-                is_pro: false 
-            }]);
-        
-        if (insertError) console.error('Error initializing usage:', insertError);
-        else {
-            this.documentCount = 0;
-            this.hasActiveSubscription = false;
-            document.getElementById('usageBar').style.width = '0%';
+            try {
+                const { data, error } = await supabase
+                    .from('user_usage')
+                    .select('document_count, is_pro')
+                    .eq('user_id', this.user.id)
+                    .single();
+                
+                if (error) throw error;
+                
+                this.documentCount = data?.document_count || 0;
+                this.hasActiveSubscription = data?.is_pro || false;
+                this.userPlan = this.hasActiveSubscription ? 'pro' : 'free';
+                
+                const usagePercentage = this.hasActiveSubscription ? 100 : 
+                    Math.min(100, (this.documentCount / 20) * 100);
+                document.getElementById('usageBar').style.width = `${usagePercentage}%`;
+            } catch (error) {
+                console.error('Error loading usage:', error);
+                const { error: insertError } = await supabase
+                    .from('user_usage')
+                    .insert([{ 
+                        user_id: this.user.id,
+                        document_count: 0,
+                        is_pro: false 
+                    }]);
+                
+                if (insertError) console.error('Error initializing usage:', insertError);
+                else {
+                    this.documentCount = 0;
+                    this.hasActiveSubscription = false;
+                    document.getElementById('usageBar').style.width = '0%';
+                }
+            }
         }
-    }
-}
 
         updateUI() {
             const isLoggedIn = !!this.user;
@@ -629,15 +624,15 @@
     }
 
     // --- GLOBAL FUNCTIONS ---
-function updateGoogleAuthUI(isAuthorized) {
-    const icons = document.querySelectorAll('.service-icon img');
-    icons.forEach(icon => {
-        icon.classList.toggle('grayscale', !isAuthorized);
-        icon.classList.toggle('opacity-70', !isAuthorized);
-        icon.classList.toggle('opacity-100', isAuthorized);
-        icon.classList.toggle('grayscale-0', isAuthorized);
-    });
-}
+    function updateGoogleAuthUI(isAuthorized) {
+        const icons = document.querySelectorAll('.service-icon img');
+        icons.forEach(icon => {
+            icon.classList.toggle('grayscale', !isAuthorized);
+            icon.classList.toggle('opacity-70', !isAuthorized);
+            icon.classList.toggle('opacity-100', isAuthorized);
+            icon.classList.toggle('grayscale-0', isAuthorized);
+        });
+    }
 
     function handleServiceClick(service) {
         if (!authManager.user) {
@@ -651,10 +646,16 @@ function updateGoogleAuthUI(isAuthorized) {
             tokenClient.requestAccessToken({ prompt: 'consent' });
             return;
         }
-
-        // Redirect to the appropriate service page
-        authManager.showLoading(true);
-        window.location.href = `./${service}.html`;
+        
+        // FIX: Changed to navigate to the email dashboard page
+        if (service === 'email') { 
+            authManager.showLoading(true);
+            window.location.href = './email.html';
+        } else if (service === 'docs') {
+            alert('The Docs tool is coming soon!');
+        } else {
+            alert(`The ${service.charAt(0).toUpperCase() + service.slice(1)} tool is coming soon!`);
+        }
     }
 
     async function saveGoogleToken(tokenResponse) {
@@ -672,42 +673,38 @@ function updateGoogleAuthUI(isAuthorized) {
         if (error) console.error('Error saving Google token:', error);
     }
 
-async function loadGoogleToken() {
-    if (!authManager.user) {
-        updateGoogleAuthUI(false);
-        return;
-    }
-
-    try {
-        const { data, error } = await supabase
-            .from('user_google_tokens')
-            .select('access_token, expires_at')
-            .eq('user_id', authManager.user.id);
-
-        if (error) {
-            console.error('Supabase error:', error);
-            showErrorToast('Failed to connect to database');
+    async function loadGoogleToken() {
+        if (!authManager.user) {
+            updateGoogleAuthUI(false);
             return;
         }
 
-        // Check if we got any data and the token isn't expired
-        if (data && data.length > 0 && new Date(data[0].expires_at) > new Date()) {
-            gapi.client.setToken({ access_token: data[0].access_token });
-            updateGoogleAuthUI(true);
-        } else {
-            updateGoogleAuthUI(false);
-            // Clean up expired token if it exists
-            if (data && data.length > 0) {
-                await supabase.from('user_google_tokens')
-                    .delete()
-                    .eq('user_id', authManager.user.id);
+        try {
+            const { data, error } = await supabase
+                .from('user_google_tokens')
+                .select('access_token, expires_at')
+                .eq('user_id', authManager.user.id);
+
+            if (error) {
+                console.error('Supabase error:', error);
+                return;
             }
+
+            if (data && data.length > 0 && new Date(data[0].expires_at) > new Date()) {
+                gapi.client.setToken({ access_token: data[0].access_token });
+                updateGoogleAuthUI(true);
+            } else {
+                updateGoogleAuthUI(false);
+                if (data && data.length > 0) {
+                    await supabase.from('user_google_tokens')
+                        .delete()
+                        .eq('user_id', authManager.user.id);
+                }
+            }
+        } catch (err) {
+            console.error('Failed to load Google token:', err);
         }
-    } catch (err) {
-        console.error('Failed to load Google token:', err);
-        showErrorToast('Authentication service unavailable');
     }
-}
 
     // --- MAIN APP LOGIC ---
     document.addEventListener('DOMContentLoaded', () => {
@@ -721,7 +718,7 @@ async function loadGoogleToken() {
             try {
                 await gapi.client.init({
                     apiKey: deobfuscate(GOOGLE_API_KEY_OBFUSCATED),
-                    discoveryDocs: [DISCOVERY_DOC],
+                    discoveryDocs: DISCOVERY_DOCS,
                 });
                 const gisScript = document.createElement('script');
                 gisScript.src = 'https://accounts.google.com/gsi/client';
